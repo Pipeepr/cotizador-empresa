@@ -120,6 +120,13 @@ function renderSkeletonRows(count, cols) {
 
 // ═══════════ DATA LOADING ═══════════
 document.addEventListener('DOMContentLoaded', async () => {
+    // Set current date automatically
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const yyyy = today.getFullYear();
+    document.getElementById('doc-fecha').textContent = `${dd}/${mm}/${yyyy}`;
+
     await Promise.all([cargarClientes(), cargarProductos()]);
 });
 
@@ -336,6 +343,8 @@ async function guardarCliente(event) {
     const rut = document.getElementById('cl-rut').value.trim();
     const email = document.getElementById('cl-email').value.trim();
     const empresa = document.getElementById('cl-empresa').value.trim();
+    const contacto = document.getElementById('cl-contacto').value.trim();
+    const direccion = document.getElementById('cl-direccion').value.trim();
 
     if (!nombre || !rut) {
         showToast('Nombre y RUT son obligatorios', 'error');
@@ -351,7 +360,7 @@ async function guardarCliente(event) {
         const res = await fetch(`${API}/clientes`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre, rut, email, empresa }),
+            body: JSON.stringify({ nombre, rut, email, empresa, contacto, direccion }),
         });
 
         if (!res.ok) {
@@ -425,9 +434,10 @@ function actualizarClienteDocs() {
     if (!cliente) return;
     
     document.getElementById('doc-client-name').textContent = cliente.empresa || cliente.nombre;
-    document.getElementById('doc-client-contacto').textContent = "Atención a: " + (cliente.empresa ? cliente.nombre : "");
+    document.getElementById('doc-client-contacto').textContent = "Atención a: " + (cliente.contacto || (cliente.empresa ? cliente.nombre : ""));
     document.getElementById('doc-client-email').textContent = "Email: " + (cliente.email || 'N/A');
     document.getElementById('doc-client-rut').textContent = "RUT: " + (cliente.rut || 'N/A');
+    document.getElementById('doc-client-direccion').textContent = "Dirección: " + (cliente.direccion || 'No especificada');
 }
 
 function agregarLineaWysiwyg(sku = null) {

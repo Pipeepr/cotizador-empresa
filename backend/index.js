@@ -39,11 +39,11 @@ app.get('/clientes', async (req, res) => {
 
 // Endpoint 2: CREAR un nuevo cliente
 app.post('/clientes', async (req, res) => {
-  const { nombre, rut, email, empresa } = req.body;
+  const { nombre, rut, email, empresa, contacto, direccion } = req.body;
   try {
     const result = await pool.query(
-      'INSERT INTO clientes (nombre, rut, email, empresa) VALUES ($1, $2, $3, $4) RETURNING *',
-      [nombre, rut, email, empresa]
+      'INSERT INTO clientes (nombre, rut, email, empresa, contacto, direccion) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [nombre, rut, email, empresa, contacto, direccion]
     );
     res.json(result.rows[0]);
   } catch (err) {
@@ -125,7 +125,9 @@ async function initDB() {
         nombre VARCHAR(255) NOT NULL,
         rut VARCHAR(20) UNIQUE NOT NULL,
         email VARCHAR(255),
-        empresa VARCHAR(255)
+        empresa VARCHAR(255),
+        contacto VARCHAR(255),
+        direccion VARCHAR(255)
       );
       CREATE TABLE IF NOT EXISTS productos (
         codigo_sku VARCHAR(50) PRIMARY KEY,
@@ -152,6 +154,8 @@ async function initDB() {
       
       ALTER TABLE detalle_cotizaciones ADD COLUMN IF NOT EXISTS nombre VARCHAR(255);
       ALTER TABLE detalle_cotizaciones DROP CONSTRAINT IF EXISTS detalle_cotizaciones_producto_sku_fkey;
+      ALTER TABLE clientes ADD COLUMN IF NOT EXISTS contacto VARCHAR(255);
+      ALTER TABLE clientes ADD COLUMN IF NOT EXISTS direccion VARCHAR(255);
     `);
     console.log('✅ Tablas verificadas/creadas correctamente');
   } catch (err) {
