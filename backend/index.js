@@ -300,11 +300,6 @@ async function initDB() {
         await pool.query('INSERT INTO usuarios (username, password) VALUES ($1, $2)', ['admin', hash]);
     }
 
-    // Temporal reset
-    console.log("TRUNCANDO HISTORIAL...");
-    await pool.query('TRUNCATE TABLE cotizaciones CASCADE;');
-    await pool.query('ALTER SEQUENCE cotizaciones_id_seq RESTART WITH 1;');
-
     console.log('✅ Tablas verificadas/creadas correctamente');
   } catch (err) {
     console.error('⚠️ Error al inicializar tablas:', err.stack || err);
