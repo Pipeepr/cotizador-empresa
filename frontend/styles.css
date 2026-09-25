@@ -1061,3 +1061,191 @@ tbody tr:last-child td {
 tbody tr {
     animation: rowFadeIn 0.3s ease-out;
 }
+
+/* ═══════════════════════════════════════════
+   PRINT / PDF PREVIEW
+   ═══════════════════════════════════════════ */
+.print-content {
+    background: #2b2b2b;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    padding: 40px;
+    height: 70vh;
+    overflow-y: auto;
+}
+
+.doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.doc-company h1 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+.doc-company p, .doc-meta p {
+    font-size: 13px;
+    color: #d1d5db;
+    margin-bottom: 3px;
+}
+.doc-meta {
+    text-align: right;
+}
+.doc-meta h2 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+.doc-divider {
+    border: none;
+    border-top: 1px solid #ffffff;
+    margin: 20px 0;
+}
+
+.doc-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.doc-info h4 {
+    font-size: 11px;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 5px;
+    letter-spacing: 0.5px;
+}
+
+.doc-info h3 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.doc-client p, .doc-terms p {
+    font-size: 13px;
+    color: #d1d5db;
+    margin-bottom: 3px;
+}
+
+.doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.doc-table th {
+    background: #e5e7eb;
+    color: #000000;
+    font-weight: bold;
+    font-size: 12px;
+    padding: 10px;
+    border: 1px solid #ffffff;
+}
+
+.doc-table td {
+    padding: 10px;
+    border: 1px solid #ffffff;
+    font-size: 13px;
+}
+
+.doc-totals-wrapper {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.doc-totals {
+    width: 300px;
+    border-collapse: collapse;
+}
+
+.doc-totals td {
+    padding: 8px 10px;
+    font-size: 13px;
+    text-align: right;
+}
+.doc-totals td:first-child {
+    text-align: left;
+}
+
+.doc-total-row {
+    background: #3f3f46;
+    font-weight: bold;
+    font-size: 16px;
+}
+.doc-total-row td {
+    font-size: 15px;
+    padding: 12px 10px;
+}
+
+.doc-notes h4 {
+    font-size: 11px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.doc-notes p {
+    font-size: 12px;
+    color: #d1d5db;
+    margin-bottom: 3px;
+}
+
+.doc-signature {
+    margin-top: 60px;
+    text-align: center;
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.doc-signature .line {
+    border-top: 1px solid #ffffff;
+    margin-bottom: 5px;
+}
+.doc-signature p {
+    font-size: 12px;
+    color: #d1d5db;
+}
+
+.doc-footer {
+    text-align: center;
+    font-size: 10px;
+    color: #9ca3af;
+    margin-top: 40px;
+}
+
+/* Print Specific Styles */
+@media print {
+    body {
+        background: #2b2b2b !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    .app-layout, .toast-container, .mobile-toggle, .print-hide {
+        display: none !important;
+    }
+    .modal-overlay {
+        position: static;
+        background: none;
+        opacity: 1;
+        visibility: visible;
+    }
+    .modal {
+        box-shadow: none;
+        border: none;
+        transform: none;
+        width: 100%;
+        max-width: none;
+        padding: 0;
+        background: transparent !important;
+    }
+    .print-content {
+        height: auto;
+        overflow: visible;
+        padding: 20px;
+    }
+}

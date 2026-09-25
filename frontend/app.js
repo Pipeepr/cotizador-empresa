@@ -461,6 +461,61 @@ function dibujarTablaCotizacion() {
     document.getElementById('total-final').textContent = formatCLP(total);
 }
 
+// ═══════════ MODAL: PREVIEW / PRINT ═══════════
+const modalPreview = {
+    overlay: null,
+    init() {
+        this.overlay = document.getElementById('modal-preview');
+        // Handle clicking outside to close
+        this.overlay.addEventListener('click', (e) => {
+            if (e.target === this.overlay) this.close();
+        });
+        // Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.overlay.classList.contains('active')) {
+                this.close();
+            }
+        });
+    },
+    open() {
+        if (!this.overlay) this.init();
+        this.overlay.classList.add('active');
+        this.overlay.setAttribute('aria-hidden', 'false');
+    },
+    close() {
+        this.overlay.classList.remove('active');
+        this.overlay.setAttribute('aria-hidden', 'true');
+    }
+};
+
+function generarDocumentoCotizacion(id, clienteId, neto, iva, total) {
+    const cliente = clientes.find(c => c.id == clienteId);
+    
+    document.getElementById('doc-id').textContent = `COT-${String(id).padStart(4, '0')}`;
+    const date = new Date();
+    document.getElementById('doc-fecha').textContent = date.toLocaleDateString('es-CL');
+    
+    document.getElementById('doc-client-name').textContent = cliente ? cliente.empresa || cliente.nombre : 'Cliente';
+    document.getElementById('doc-client-email').textContent = cliente ? cliente.email : '';
+    document.getElementById('doc-client-rut').textContent = cliente ? cliente.rut : '';
+    
+    const tbody = document.getElementById('doc-table-body');
+    tbody.innerHTML = lineas.map(l => `
+        <tr>
+            <td style="text-align: left;">${escapeHtml(l.nombre)}</td>
+            <td style="text-align: center;">${l.cantidad}</td>
+            <td style="text-align: right;">${formatCLP(l.precio_venta)}</td>
+            <td style="text-align: right;">${formatCLP(l.cantidad * l.precio_venta)}</td>
+        </tr>
+    `).join('');
+    
+    document.getElementById('doc-subtotal').textContent = formatCLP(neto);
+    document.getElementById('doc-iva').textContent = formatCLP(iva);
+    document.getElementById('doc-total').textContent = formatCLP(total);
+    
+    modalPreview.open();
+}
+
 // ═══════════ COTIZACIÓN: GUARDAR EN BD ═══════════
 async function guardarCotizacion() {
     const clienteId = document.getElementById('select-cliente').value;
@@ -503,6 +558,9 @@ async function guardarCotizacion() {
 
         const data = await res.json();
         showToast(`Cotización #${data.id} guardada con éxito`, 'success');
+
+        // Generar el documento PDF ANTES de limpiar las líneas
+        generarDocumentoCotizacion(data.id, clienteId, neto, iva, total);
 
         // Reset
         lineas = [];
