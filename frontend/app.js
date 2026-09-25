@@ -472,18 +472,18 @@ const modalPreview = {
         });
         // Escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.overlay.classList.contains('active')) {
+            if (e.key === 'Escape' && this.overlay.classList.contains('open')) {
                 this.close();
             }
         });
     },
     open() {
         if (!this.overlay) this.init();
-        this.overlay.classList.add('active');
+        this.overlay.classList.add('open');
         this.overlay.setAttribute('aria-hidden', 'false');
     },
     close() {
-        this.overlay.classList.remove('active');
+        this.overlay.classList.remove('open');
         this.overlay.setAttribute('aria-hidden', 'true');
     }
 };
