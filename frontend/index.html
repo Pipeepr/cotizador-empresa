@@ -88,6 +88,20 @@
                     </span>
                     <span>Clientes</span>
                 </button>
+                <button class="nav-item" data-section="historial" onclick="switchSection('historial')" role="tab"
+                    aria-selected="false" aria-controls="section-historial" id="tab-historial">
+                    <span class="nav-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <polyline points="10 9 9 9 8 9" />
+                        </svg>
+                    </span>
+                    <span>Historial</span>
+                </button>
             </nav>
             <div class="sidebar-footer">
                 <p>CotizaPro v1.0</p>
@@ -200,6 +214,8 @@
                                 cliente]</p>
                             <p id="doc-client-direccion" contenteditable="true" spellcheck="false">Dirección: [Dirección
                                 del Cliente]</p>
+                            <p id="doc-client-comuna-ciudad" contenteditable="true" spellcheck="false">Comuna/Ciudad: [Comuna, Ciudad]</p>
+                            <p id="doc-client-giro" contenteditable="true" spellcheck="false">Giro: [Giro de la empresa]</p>
                         </div>
                         <div class="doc-terms" contenteditable="true" spellcheck="false"
                             style="border: 2px solid #555; padding: 15px; border-radius: 8px; background: rgba(255,255,255,0.02); min-width: 250px;">
@@ -389,6 +405,33 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ═══════════════════════════════════════
+             SECTION: HISTORIAL
+             ═══════════════════════════════════════ -->
+            <div class="section" id="section-historial" role="tabpanel" aria-labelledby="tab-historial" aria-hidden="true">
+                <div class="page-header">
+                    <h2>Historial de Cotizaciones</h2>
+                    <p>Revisa las últimas cotizaciones guardadas en el sistema</p>
+                </div>
+                <div class="card">
+                    <div class="table-wrapper">
+                        <table aria-label="Historial de Cotizaciones">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Número</th>
+                                    <th scope="col">Fecha</th>
+                                    <th scope="col">Cliente / Empresa</th>
+                                    <th scope="col">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-historial">
+                                <!-- Filas dinámicas -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -414,6 +457,7 @@
                 </button>
             </div>
             <form id="form-cliente" onsubmit="guardarCliente(event)" novalidate>
+                <input type="hidden" id="cl-id" value="">
                 <div class="form-row form-row-2">
                     <div class="form-group">
                         <label class="form-label" for="cl-nombre">Nombre *</label>
@@ -448,6 +492,20 @@
                         <input type="text" class="form-control" id="cl-direccion"
                             placeholder="Ej: Calle Principal 123" />
                     </div>
+                </div>
+                <div class="form-row form-row-2">
+                    <div class="form-group">
+                        <label class="form-label" for="cl-comuna">Comuna</label>
+                        <input type="text" class="form-control" id="cl-comuna" placeholder="Ej: Santiago Centro" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="cl-ciudad">Ciudad</label>
+                        <input type="text" class="form-control" id="cl-ciudad" placeholder="Ej: Santiago" />
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label" for="cl-giro">Giro de la Empresa</label>
+                    <input type="text" class="form-control" id="cl-giro" placeholder="Ej: Metalmecánica, Servicios, etc." />
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-ghost" onclick="modalCliente.close()">Cancelar</button>
@@ -566,7 +624,7 @@
 
 
     <!-- ═══════════ JAVASCRIPT ═══════════ -->
-    <script src="app.js?v=13"></script>
+    <script src="app.js?v=14"></script>
 
 </body>
 

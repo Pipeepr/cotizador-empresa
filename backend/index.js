@@ -116,16 +116,32 @@ app.get('/clientes', requireAuth, async (req, res) => {
 
 // Endpoint 2: CREAR un nuevo cliente
 app.post('/clientes', requireAuth, async (req, res) => {
-  const { nombre, rut, email, empresa, contacto, direccion } = req.body;
+  const { nombre, rut, email, empresa, contacto, direccion, comuna, ciudad, giro } = req.body;
   try {
     const result = await pool.query(
-      'INSERT INTO clientes (nombre, rut, email, empresa, contacto, direccion) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [nombre, rut, email, empresa, contacto, direccion]
+      'INSERT INTO clientes (nombre, rut, email, empresa, contacto, direccion, comuna, ciudad, giro) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+      [nombre, rut, email, empresa, contacto, direccion, comuna, ciudad, giro]
     );
     res.json(result.rows[0]);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Error al crear el cliente');
+  }
+});
+
+// Endpoint 2.5: ACTUALIZAR un cliente
+app.put('/clientes/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const { nombre, rut, email, empresa, contacto, direccion, comuna, ciudad, giro } = req.body;
+  try {
+    const result = await pool.query(
+      'UPDATE clientes SET nombre = $1, rut = $2, email = $3, empresa = $4, contacto = $5, direccion = $6, comuna = $7, ciudad = $8, giro = $9 WHERE id = $10 RETURNING *',
+      [nombre, rut, email, empresa, contacto, direccion, comuna, ciudad, giro, id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Error al actualizar cliente' });
   }
 });
 
@@ -203,6 +219,23 @@ app.post('/cotizaciones', requireAuth, async (req, res) => {
   }
 });
 
+// 6. OBTENER historial de cotizaciones
+app.get('/cotizaciones', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT c.id, c.fecha, c.total, cl.nombre AS cliente_nombre, cl.empresa AS cliente_empresa
+      FROM cotizaciones c
+      LEFT JOIN clientes cl ON c.cliente_id = cl.id
+      ORDER BY c.fecha DESC
+      LIMIT 50
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Error al obtener cotizaciones');
+  }
+});
+
 // Catch-all: servir index.html para cualquier ruta no-API
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
@@ -254,6 +287,9 @@ async function initDB() {
       ALTER TABLE detalle_cotizaciones DROP CONSTRAINT IF EXISTS detalle_cotizaciones_producto_sku_fkey;
       ALTER TABLE clientes ADD COLUMN IF NOT EXISTS contacto VARCHAR(255);
       ALTER TABLE clientes ADD COLUMN IF NOT EXISTS direccion VARCHAR(255);
+      ALTER TABLE clientes ADD COLUMN IF NOT EXISTS comuna VARCHAR(255);
+      ALTER TABLE clientes ADD COLUMN IF NOT EXISTS ciudad VARCHAR(255);
+      ALTER TABLE clientes ADD COLUMN IF NOT EXISTS giro VARCHAR(255);
     `);
     
     // Seed admin if not exists

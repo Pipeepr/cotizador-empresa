@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const yyyy = today.getFullYear();
     document.getElementById('doc-fecha').textContent = `${dd}/${mm}/${yyyy}`;
 
-    await Promise.all([cargarClientes(), cargarProductos()]);
+    await Promise.all([cargarClientes(), cargarProductos(), cargarHistorial()]);
 });
 
 async function cargarClientes() {
@@ -230,10 +230,15 @@ function renderTablaClientes() {
             <td>${c.email ? escapeHtml(c.email) : '<span style="color:var(--text-muted)">—</span>'}</td>
             <td>${c.empresa ? escapeHtml(c.empresa) : '<span style="color:var(--text-muted)">—</span>'}</td>
             <td>
-                <button type="button" style="background-color: var(--danger); color: white; border: none; padding: 6px 12px; font-size: 12px; border-radius: 6px; cursor: pointer;" onclick="eliminarCliente(${c.id}, '${escapeHtml(c.nombre)}')">
-                    Borrar
-                </button>
-            </td>
+        <div style="display:flex; gap: 8px;">
+            <button type="button" style="background-color: var(--primary); color: white; border: none; padding: 6px 12px; font-size: 12px; border-radius: 6px; cursor: pointer;" onclick="abrirEditarCliente(${c.id})">
+                Editar
+            </button>
+            <button type="button" style="background-color: var(--danger); color: white; border: none; padding: 6px 12px; font-size: 12px; border-radius: 6px; cursor: pointer;" onclick="eliminarCliente(${c.id}, '${escapeHtml(c.nombre)}')">
+                Borrar
+            </button>
+        </div>
+    </td>
         </tr>
     `).join('');
 
@@ -345,12 +350,16 @@ const modalProducto = {
 async function guardarCliente(event) {
     event.preventDefault();
 
+    const id = document.getElementById('cl-id') ? document.getElementById('cl-id').value : '';
     const nombre = document.getElementById('cl-nombre').value.trim();
     const rut = document.getElementById('cl-rut').value.trim();
     const email = document.getElementById('cl-email').value.trim();
     const empresa = document.getElementById('cl-empresa').value.trim();
     const contacto = document.getElementById('cl-contacto').value.trim();
     const direccion = document.getElementById('cl-direccion').value.trim();
+    const comuna = document.getElementById('cl-comuna') ? document.getElementById('cl-comuna').value.trim() : '';
+    const ciudad = document.getElementById('cl-ciudad') ? document.getElementById('cl-ciudad').value.trim() : '';
+    const giro = document.getElementById('cl-giro') ? document.getElementById('cl-giro').value.trim() : '';
 
     if (!nombre || !rut) {
         showToast('Nombre y RUT son obligatorios', 'error');
@@ -360,13 +369,17 @@ async function guardarCliente(event) {
     const btn = event.target.querySelector('button[type="submit"]');
     const originalHTML = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = `<span class="spinner"></span> Guardando...`;
+    btn.innerHTML = '<span class="spinner"></span> Guardando...';
 
     try {
-        const res = await fetch(`${API}/clientes`, {
-            method: 'POST',
+        const isEdit = !!id;
+        const url = isEdit ? `${API}/clientes/${id}` : `${API}/clientes`;
+        const method = isEdit ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+            method: method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre, rut, email, empresa, contacto, direccion }),
+            body: JSON.stringify({ nombre, rut, email, empresa, contacto, direccion, comuna, ciudad, giro }),
         });
 
         if (!res.ok) {
@@ -374,13 +387,20 @@ async function guardarCliente(event) {
             throw new Error(text);
         }
 
-        const nuevoCliente = await res.json();
-        clientes.push(nuevoCliente);
+        const clienteGuardado = await res.json();
+        
+        if (isEdit) {
+            const index = clientes.findIndex(c => c.id == id);
+            if(index !== -1) clientes[index] = clienteGuardado;
+        } else {
+            clientes.push(clienteGuardado);
+        }
+        
         renderSelectClientes();
         renderTablaClientes();
         renderStatsClientes();
         modalCliente.close();
-        showToast(`Cliente "${escapeHtml(nombre)}" creado exitosamente`, 'success');
+        showToast(`Cliente "${escapeHtml(nombre)}" ${isEdit ? 'actualizado' : 'creado'} exitosamente`, 'success');
     } catch (err) {
         showToast('Error al guardar el cliente. ¿RUT duplicado?', 'error');
     } finally {
@@ -444,6 +464,13 @@ function actualizarClienteDocs() {
     document.getElementById('doc-client-email').textContent = "Email: " + (cliente.email || 'N/A');
     document.getElementById('doc-client-rut').textContent = "RUT: " + (cliente.rut || 'N/A');
     document.getElementById('doc-client-direccion').textContent = "Dirección: " + (cliente.direccion || 'No especificada');
+    
+    const comunaCiudad = [cliente.comuna, cliente.ciudad].filter(Boolean).join(', ');
+    const docComuna = document.getElementById('doc-client-comuna-ciudad');
+    if (docComuna) docComuna.textContent = "Comuna/Ciudad: " + (comunaCiudad || 'No especificada');
+    
+    const docGiro = document.getElementById('doc-client-giro');
+    if (docGiro) docGiro.textContent = "Giro: " + (cliente.giro || 'No especificado');
 }
 
 function agregarLineaWysiwyg(sku = null) {
@@ -658,4 +685,68 @@ async function eliminarCliente(id, nombre) {
     } catch (err) {
         showToast(err.message, 'error');
     }
+}
+
+async function cargarHistorial() {
+    const tbody = document.getElementById('tabla-historial');
+    if (!tbody) return;
+    
+    tbody.innerHTML = renderSkeletonRows(4, 4);
+
+    try {
+        const res = await fetch(`${API}/cotizaciones`);
+        if (res.status === 401) window.location.href = '/login';
+        if (!res.ok) throw new Error('Error de red');
+        const data = await res.json();
+        
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><p>No hay cotizaciones registradas</p></div></td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = data.map(c => {
+            const dateStr = new Date(c.fecha).toLocaleDateString();
+            const clientName = escapeHtml(c.cliente_empresa || c.cliente_nombre || 'N/A');
+            return `
+                <tr>
+                    <td><strong>COT-${String(c.id).padStart(4, '0')}</strong></td>
+                    <td>${dateStr}</td>
+                    <td>${clientName}</td>
+                    <td>${formatCLP(c.total)}</td>
+                </tr>
+            `;
+        }).join('');
+    } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><p style="color:var(--danger)">Error al cargar historial</p></div></td></tr>';
+    }
+}
+
+function abrirEditarCliente(id) {
+    const cliente = clientes.find(c => c.id == id);
+    if (!cliente) return;
+    document.getElementById('modal-cliente-title').innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px; height:24px; display:inline-block; vertical-align:middle; margin-right:8px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+        Editar Cliente
+    `;
+    document.getElementById('cl-id').value = cliente.id;
+    document.getElementById('cl-nombre').value = cliente.nombre || '';
+    document.getElementById('cl-rut').value = cliente.rut || '';
+    document.getElementById('cl-email').value = cliente.email || '';
+    document.getElementById('cl-empresa').value = cliente.empresa || '';
+    document.getElementById('cl-contacto').value = cliente.contacto || '';
+    document.getElementById('cl-direccion').value = cliente.direccion || '';
+    document.getElementById('cl-comuna').value = cliente.comuna || '';
+    document.getElementById('cl-ciudad').value = cliente.ciudad || '';
+    document.getElementById('cl-giro').value = cliente.giro || '';
+    modalCliente.open();
+}
+
+function abrirNuevoCliente() {
+    document.getElementById('modal-cliente-title').innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px; height:24px; display:inline-block; vertical-align:middle; margin-right:8px;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Nuevo Cliente
+    `;
+    document.getElementById('cl-id').value = '';
+    document.getElementById('form-cliente').reset();
+    modalCliente.open();
 }
