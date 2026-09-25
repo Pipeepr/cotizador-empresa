@@ -1357,3 +1357,7 @@ tbody tr {
 #wysiwyg-container h1, #wysiwyg-container p, #wysiwyg-container span, #wysiwyg-container div {
     color: #000000 !important;
 }
+
+#wysiwyg-container .doc-total-row {
+    background: #e5e7eb !important;
+}
