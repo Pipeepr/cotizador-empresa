@@ -1,6 +1,6 @@
 /**
- * CotizaPro – Application Logic
- * ─────────────────────────────────────────────
+ * CotizaPro â€“ Application Logic
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Handles navigation, data loading, rendering,
  * client management, and quotation workflow.
  */
@@ -11,7 +11,7 @@ const API = window.location.hostname === 'localhost' || window.location.hostname
     ? 'http://localhost:3000'
     : window.location.origin;
 
-// ═══════════ SVG ICON LIBRARY ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• SVG ICON LIBRARY â•â•â•â•â•â•â•â•â•â•â•
 // Using inline SVGs (Lucide-style) for cross-platform consistency
 const Icons = {
     zap:         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
@@ -35,7 +35,7 @@ const Icons = {
     hash:        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg>',
 };
 
-// ═══════════ STATE ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• STATE â•â•â•â•â•â•â•â•â•â•â•
 let productos = [];
 let clientes = [];
 let lineas = [];
@@ -43,7 +43,7 @@ let isLoadingClientes = false;
 let isLoadingProductos = false;
 let searchClienteQuery = '';
 
-// ═══════════ UTILITY: Escape HTML (XSS Prevention) ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• UTILITY: Escape HTML (XSS Prevention) â•â•â•â•â•â•â•â•â•â•â•
 function escapeHtml(str) {
     if (str == null) return '';
     const div = document.createElement('div');
@@ -51,12 +51,12 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
-// ═══════════ UTILITY: Format Currency ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• UTILITY: Format Currency â•â•â•â•â•â•â•â•â•â•â•
 function formatCLP(amount) {
     return '$' + Math.round(Number(amount) || 0).toLocaleString('es-CL');
 }
 
-// ═══════════ NAVIGATION ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• NAVIGATION â•â•â•â•â•â•â•â•â•â•â•
 function switchSection(sectionId) {
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.toggle('active', item.dataset.section === sectionId);
@@ -82,7 +82,7 @@ function closeSidebar() {
     document.getElementById('mobile-toggle').setAttribute('aria-expanded', 'false');
 }
 
-// ═══════════ TOAST NOTIFICATIONS ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• TOAST NOTIFICATIONS â•â•â•â•â•â•â•â•â•â•â•
 function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
@@ -105,7 +105,7 @@ function showToast(message, type = 'info') {
     }, 3500);
 }
 
-// ═══════════ SKELETON LOADING ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• SKELETON LOADING â•â•â•â•â•â•â•â•â•â•â•
 function renderSkeletonRows(count, cols) {
     let html = '';
     for (let i = 0; i < count; i++) {
@@ -118,7 +118,7 @@ function renderSkeletonRows(count, cols) {
     return html;
 }
 
-// ═══════════ DATA LOADING ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• DATA LOADING â•â•â•â•â•â•â•â•â•â•â•
 document.addEventListener('DOMContentLoaded', async () => {
     // Set current date automatically
     const today = new Date();
@@ -144,12 +144,12 @@ async function cargarClientes() {
         renderTablaClientes();
         renderStatsClientes();
     } catch (e) {
-        showToast('Error al conectar con el servidor. ¿Está corriendo el backend?', 'error');
+        showToast('Error al conectar con el servidor. Â¿EstÃ¡ corriendo el backend?', 'error');
         if (tbody) {
             tbody.innerHTML = `<tr><td colspan="6">
                 <div class="empty-state">
                     <div class="empty-icon">${Icons.alertCircle}</div>
-                    <p>Error al cargar clientes. Verifica la conexión.</p>
+                    <p>Error al cargar clientes. Verifica la conexiÃ³n.</p>
                 </div>
             </td></tr>`;
         }
@@ -172,13 +172,13 @@ async function cargarProductos() {
     }
 }
 
-// ═══════════ RENDER: SELECTS ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• RENDER: SELECTS â•â•â•â•â•â•â•â•â•â•â•
 function renderSelectClientes() {
     const select = document.getElementById('select-cliente');
     if (!select) return;
     let options = '<option value="" disabled selected>Seleccione un cliente...</option>';
     clientes.forEach(c => {
-        options += `<option value="${c.id}">${escapeHtml(c.nombre)} — ${escapeHtml(c.empresa || 'Sin empresa')}</option>`;
+        options += `<option value="${c.id}">${escapeHtml(c.nombre)} â€” ${escapeHtml(c.empresa || 'Sin empresa')}</option>`;
     });
     select.innerHTML = options;
 }
@@ -186,14 +186,14 @@ function renderSelectClientes() {
 function renderSelectProductos() {
     const selectProducto = document.getElementById('select-producto');
     if (!selectProducto) return;
-    let options = '<option value="" disabled selected>+ Añadir desde base de datos</option>';
+    let options = '<option value="" disabled selected>+ AÃ±adir desde base de datos</option>';
     productos.forEach(p => {
         options += `<option value="${p.codigo_sku}">${escapeHtml(p.nombre)} - ${formatCLP(p.precio_base)}</option>`;
     });
     selectProducto.innerHTML = options;
 }
 
-// ═══════════ RENDER: TABLE CLIENTES ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• RENDER: TABLE CLIENTES â•â•â•â•â•â•â•â•â•â•â•
 function renderTablaClientes() {
     const tbody = document.getElementById('tabla-clientes');
     if (!tbody) return;
@@ -227,8 +227,8 @@ function renderTablaClientes() {
             <td><span class="badge badge-info">#${escapeHtml(c.id)}</span></td>
             <td><strong>${escapeHtml(c.nombre)}</strong></td>
             <td>${escapeHtml(c.rut)}</td>
-            <td>${c.email ? escapeHtml(c.email) : '<span style="color:var(--text-muted)">—</span>'}</td>
-            <td>${c.empresa ? escapeHtml(c.empresa) : '<span style="color:var(--text-muted)">—</span>'}</td>
+            <td>${c.email ? escapeHtml(c.email) : '<span style="color:var(--text-muted)">â€”</span>'}</td>
+            <td>${c.empresa ? escapeHtml(c.empresa) : '<span style="color:var(--text-muted)">â€”</span>'}</td>
             <td>
                 <button type="button" class="btn btn-outline" style="color:var(--danger-color); border-color:var(--danger-color); padding:4px 8px; font-size:12px;" onclick="eliminarCliente(${c.id}, '${escapeHtml(c.nombre)}')">
                     Borrar
@@ -240,13 +240,13 @@ function renderTablaClientes() {
     document.getElementById('badge-clientes').textContent = filtered.length;
 }
 
-// ═══════════ SEARCH CLIENTES ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• SEARCH CLIENTES â•â•â•â•â•â•â•â•â•â•â•
 function onSearchClientes(e) {
     searchClienteQuery = e.target.value;
     renderTablaClientes();
 }
 
-// ═══════════ RENDER: STATS CLIENTES ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• RENDER: STATS CLIENTES â•â•â•â•â•â•â•â•â•â•â•
 function renderStatsClientes() {
     const totalEl = document.getElementById('stat-total-clientes');
     const empEl = document.getElementById('stat-empresas');
@@ -259,7 +259,7 @@ function renderStatsClientes() {
     emailEl.textContent = clientes.filter(c => c.email).length;
 }
 
-// ═══════════ MODAL: CLIENTE ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• MODAL: CLIENTE â•â•â•â•â•â•â•â•â•â•â•
 const modalCliente = {
     el: () => document.getElementById('modal-cliente'),
 
@@ -282,7 +282,7 @@ const modalCliente = {
     }
 };
 
-// ═══════════ MODAL: CONFIRM (Delete) ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• MODAL: CONFIRM (Delete) â•â•â•â•â•â•â•â•â•â•â•
 const modalConfirm = {
     el: () => document.getElementById('modal-confirm'),
     _resolve: null,
@@ -318,7 +318,7 @@ const modalConfirm = {
     }
 };
 
-// ═══════════ MODAL: PRODUCTO ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• MODAL: PRODUCTO â•â•â•â•â•â•â•â•â•â•â•
 const modalProducto = {
     el: () => document.getElementById('modal-producto'),
 
@@ -341,7 +341,7 @@ const modalProducto = {
     }
 };
 
-// ═══════════ GUARDAR CLIENTE ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• GUARDAR CLIENTE â•â•â•â•â•â•â•â•â•â•â•
 async function guardarCliente(event) {
     event.preventDefault();
 
@@ -382,14 +382,14 @@ async function guardarCliente(event) {
         modalCliente.close();
         showToast(`Cliente "${escapeHtml(nombre)}" creado exitosamente`, 'success');
     } catch (err) {
-        showToast('Error al guardar el cliente. ¿RUT duplicado?', 'error');
+        showToast('Error al guardar el cliente. Â¿RUT duplicado?', 'error');
     } finally {
         btn.disabled = false;
         btn.innerHTML = originalHTML;
     }
 }
 
-// ═══════════ GUARDAR PRODUCTO ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• GUARDAR PRODUCTO â•â•â•â•â•â•â•â•â•â•â•
 async function guardarProducto(event) {
     event.preventDefault();
 
@@ -399,7 +399,7 @@ async function guardarProducto(event) {
     const stock = document.getElementById('prod-stock').value || 0;
 
     if (!codigo_sku || !nombre || !precio_base) {
-        showToast('Código, Nombre y Precio son obligatorios', 'error');
+        showToast('CÃ³digo, Nombre y Precio son obligatorios', 'error');
         return;
     }
 
@@ -426,30 +426,30 @@ async function guardarProducto(event) {
         modalProducto.close();
         showToast(`Producto "${escapeHtml(nombre)}" creado exitosamente`, 'success');
     } catch (err) {
-        showToast('Error al guardar el producto. ¿Código duplicado?', 'error');
+        showToast('Error al guardar el producto. Â¿CÃ³digo duplicado?', 'error');
     } finally {
         btn.disabled = false;
         btn.innerHTML = originalHTML;
     }
 }
 
-// ═══════════ COTIZACIÓN: WYSIWYG EDITOR ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• COTIZACIÃ“N: WYSIWYG EDITOR â•â•â•â•â•â•â•â•â•â•â•
 function actualizarClienteDocs() {
     const clienteId = document.getElementById('select-cliente').value;
     const cliente = clientes.find(c => c.id == clienteId);
     if (!cliente) return;
     
     document.getElementById('doc-client-name').textContent = cliente.empresa || cliente.nombre;
-    document.getElementById('doc-client-contacto').textContent = "Atención a: " + (cliente.contacto || (cliente.empresa ? cliente.nombre : ""));
+    document.getElementById('doc-client-contacto').textContent = "AtenciÃ³n a: " + (cliente.contacto || (cliente.empresa ? cliente.nombre : ""));
     document.getElementById('doc-client-email').textContent = "Email: " + (cliente.email || 'N/A');
     document.getElementById('doc-client-rut').textContent = "RUT: " + (cliente.rut || 'N/A');
-    document.getElementById('doc-client-direccion').textContent = "Dirección: " + (cliente.direccion || 'No especificada');
+    document.getElementById('doc-client-direccion').textContent = "DirecciÃ³n: " + (cliente.direccion || 'No especificada');
 }
 
 function agregarLineaWysiwyg(sku = null) {
     const tbody = document.getElementById('tabla-cotizacion');
     
-    // Quitar estado vacío
+    // Quitar estado vacÃ­o
     if (tbody.querySelector('.empty-state')) {
         tbody.innerHTML = '';
     }
@@ -474,11 +474,11 @@ function agregarLineaWysiwyg(sku = null) {
                 <button class="btn-remove print-hide" onclick="this.closest('tr').remove(); recalcularTotalesWysiwyg();" title="Eliminar" style="padding: 2px;">
                     ${Icons.x}
                 </button>
-                <input type="text" class="wysiwyg-input sku-input" placeholder="CÓDIGO" value="${escapeHtml(sku || '')}" style="width: 80px;">
+                <input type="text" class="wysiwyg-input sku-input" placeholder="CÃ“DIGO" value="${escapeHtml(sku || '')}" style="width: 80px;">
             </div>
         </td>
         <td style="text-align: left;">
-            <input type="text" class="wysiwyg-input desc-input" placeholder="Descripción del producto..." value="${escapeHtml(nombre)}">
+            <input type="text" class="wysiwyg-input desc-input" placeholder="DescripciÃ³n del producto..." value="${escapeHtml(nombre)}">
         </td>
         <td style="text-align: center;">
             <input type="number" class="wysiwyg-input qty-input" value="1" min="1" onchange="recalcularTotalesWysiwyg()" onkeyup="recalcularTotalesWysiwyg()" style="text-align: center;">
@@ -520,7 +520,7 @@ function recalcularTotalesWysiwyg() {
     document.getElementById('total-final').textContent = formatCLP(total);
 }
 
-// ═══════════ COTIZACIÓN: GUARDAR Y PDF EN BD ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• COTIZACIÃ“N: GUARDAR Y PDF EN BD â•â•â•â•â•â•â•â•â•â•â•
 async function guardarCotizacion() {
     const clienteId = document.getElementById('select-cliente').value;
 
@@ -591,7 +591,7 @@ async function guardarCotizacion() {
         // Actualiza el numero de COT visualmente
         document.getElementById('doc-id').textContent = `COT-${String(data.id).padStart(4, '0')}`;
         
-        showToast(`Cotización #${data.id} guardada. Generando PDF...`, 'success');
+        showToast(`CotizaciÃ³n #${data.id} guardada. Generando PDF...`, 'success');
 
         // Disparar PDF
         setTimeout(() => {
@@ -599,14 +599,14 @@ async function guardarCotizacion() {
         }, 500);
 
     } catch (err) {
-        showToast('Error al guardar la cotización', 'error');
+        showToast('Error al guardar la cotizaciÃ³n', 'error');
     } finally {
         btn.disabled = false;
         btn.innerHTML = originalHTML;
     }
 }
 
-// ═══════════ EVENT LISTENERS ═══════════
+// â•â•â•â•â•â•â•â•â•â•â• EVENT LISTENERS â•â•â•â•â•â•â•â•â•â•â•
 
 // Close sidebar when clicking outside on mobile
 document.addEventListener('click', (e) => {
@@ -628,53 +628,51 @@ document.addEventListener('keydown', (e) => {
 
 // Close modals when clicking overlay
 document.addEventListener('click', (e) => {
-    if (e.target.id === 'modal-cliente') modalCliente.close();
-    if (e.target.id === 'modal-producto') modalProducto.close();
-    if (e.target.id === 'modal-confirm') modalConfirm.cancel();
+    if (e.target.classList.contains('modal-overlay')) {
+        modalCliente.close();
+        modalProducto.close();
+    }
 });
 
- 
- / /   P%P%P%P%P%P%P%P%P%P%P%  E L I M I N A R   C L I E N T E   P%P%P%P%P%P%P%P%P%P%P%
- a s y n c   f u n c t i o n   e l i m i n a r C l i e n t e ( i d ,   n o m b r e )   { 
-         c o n s t   c o n f i r m   =   a w a i t   m o d a l C o n f i r m . s h o w ( ' � E s t � s   s e g u r o   d e   q u e   d e s e a s   e l i m i n a r   a   '   +   n o m b r e   +   ' ?   E s t a   a c c i � n   n o   s e   p u e d e   d e s h a c e r . ' ) ; 
-         i f   ( ! c o n f i r m )   r e t u r n ; 
- 
-         t r y   { 
-                 c o n s t   r e s   =   a w a i t   f e t c h ( A P I   +   ' / c l i e n t e s / '   +   i d ,   {   m e t h o d :   ' D E L E T E '   } ) ; 
-                 i f   ( r e s . s t a t u s   = = =   4 0 1 )   { 
-                         w i n d o w . l o c a t i o n . h r e f   =   ' / l o g i n ' ; 
-                         r e t u r n ; 
-                 } 
-                 i f   ( ! r e s . o k )   { 
-                         c o n s t   d a t a   =   a w a i t   r e s . j s o n ( ) ; 
-                         t h r o w   n e w   E r r o r ( d a t a . e r r o r   | |   ' E r r o r   a l   e l i m i n a r ' ) ; 
-                 } 
-                 
-                 s h o w T o a s t ( ' C l i e n t e   e l i m i n a d o   c o r r e c t a m e n t e ' ,   ' s u c c e s s ' ) ; 
-                 a w a i t   c a r g a r C l i e n t e s ( ) ; 
-         }   c a t c h   ( e r r )   { 
-                 s h o w T o a s t ( e r r . m e s s a g e ,   ' e r r o r ' ) ; 
-         } 
- } 
- 
- / /   P%P%P%P%P%P%P%P%P%P%P%  R E I N I C I A R   C O T I Z A C I O N E S   P%P%P%P%P%P%P%P%P%P%P%
- a s y n c   f u n c t i o n   r e s e t C o t i z a c i o n e s ( )   { 
-         c o n s t   c o n f i r m   =   a w a i t   m o d a l C o n f i r m . s h o w ( ' �&�  A D V E R T E N C I A :   E s t o   e l i m i n a r �   T O D A S   l a s   c o t i z a c i o n e s   g u a r d a d a s   e n   l a   b a s e   d e   d a t o s   y   r e i n i c i a r �   e l   n � m e r o   a   C O T - 0 0 0 1 .   � E s t � s   a b s o l u t a m e n t e   s e g u r o ? ' ) ; 
-         i f   ( ! c o n f i r m )   r e t u r n ; 
- 
-         t r y   { 
-                 c o n s t   r e s   =   a w a i t   f e t c h ( A P I   +   ' / a p i / r e s e t - c o t i z a c i o n e s ' ,   {   m e t h o d :   ' P O S T '   } ) ; 
-                 i f   ( r e s . s t a t u s   = = =   4 0 1 )   { 
-                         w i n d o w . l o c a t i o n . h r e f   =   ' / l o g i n ' ; 
-                         r e t u r n ; 
-                 } 
-                 i f   ( ! r e s . o k )   t h r o w   n e w   E r r o r ( ' E r r o r   a l   r e i n i c i a r   e l   c o n t a d o r ' ) ; 
-                 
-                 s h o w T o a s t ( ' E l   c o n t a d o r   s e   h a   r e i n i c i a d o   a   C O T - 0 0 0 0 ' ,   ' s u c c e s s ' ) ; 
-                 d o c u m e n t . g e t E l e m e n t B y I d ( ' d o c - i d ' ) . t e x t C o n t e n t   =   ' C O T - 0 0 0 0 ' ; 
-         }   c a t c h   ( e r r )   { 
-                 s h o w T o a s t ( e r r . m e s s a g e ,   ' e r r o r ' ) ; 
-         } 
- } 
-  
- 
+// ═══════════ ELIMINAR CLIENTE ═══════════
+async function eliminarCliente(id, nombre) {
+    const confirm = await modalConfirm.show('¿Estás seguro de que deseas eliminar a ' + nombre + '? Esta acción no se puede deshacer.');
+    if (!confirm) return;
+
+    try {
+        const res = await fetch(API + '/clientes/' + id, { method: 'DELETE' });
+        if (res.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || 'Error al eliminar');
+        }
+        
+        showToast('Cliente eliminado correctamente', 'success');
+        await cargarClientes();
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+}
+
+// ═══════════ REINICIAR COTIZACIONES ═══════════
+async function resetCotizaciones() {
+    const confirm = await modalConfirm.show('⚠️ ADVERTENCIA: Esto eliminará TODAS las cotizaciones guardadas en la base de datos y reiniciará el número a COT-0001. ¿Estás absolutamente seguro?');
+    if (!confirm) return;
+
+    try {
+        const res = await fetch(API + '/api/reset-cotizaciones', { method: 'POST' });
+        if (res.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+        if (!res.ok) throw new Error('Error al reiniciar el contador');
+        
+        showToast('El contador se ha reiniciado a COT-0000', 'success');
+        document.getElementById('doc-id').textContent = 'COT-0000';
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+}
