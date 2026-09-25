@@ -502,10 +502,10 @@ function generarDocumentoCotizacion(id, clienteId, neto, iva, total) {
     const tbody = document.getElementById('doc-table-body');
     tbody.innerHTML = lineas.map(l => `
         <tr>
-            <td style="text-align: left;">${escapeHtml(l.nombre)}</td>
-            <td style="text-align: center;">${l.cantidad}</td>
-            <td style="text-align: right;">${formatCLP(l.precio_venta)}</td>
-            <td style="text-align: right;">${formatCLP(l.cantidad * l.precio_venta)}</td>
+            <td style="text-align: left;" contenteditable="true">${escapeHtml(l.nombre)}</td>
+            <td style="text-align: center;" contenteditable="true">${l.cantidad}</td>
+            <td style="text-align: right;" contenteditable="true">${formatCLP(l.precio_venta)}</td>
+            <td style="text-align: right;" contenteditable="true">${formatCLP(l.cantidad * l.precio_venta)}</td>
         </tr>
     `).join('');
     

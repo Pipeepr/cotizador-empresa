@@ -432,15 +432,15 @@
         <div id="print-content" class="print-content">
             <div class="doc-header">
                 <div class="doc-company">
-                    <h1>[NOMBRE DE TU EMPRESA]</h1>
-                    <p>[Tu nombre] - [correo@empresa.com] - [Teléfono]</p>
-                    <p>[Dirección / Ciudad / País]</p>
+                    <h1 contenteditable="true">[NOMBRE DE TU EMPRESA]</h1>
+                    <p contenteditable="true">[Tu nombre] - [correo@empresa.com] - [Teléfono]</p>
+                    <p contenteditable="true">[Dirección / Ciudad / País]</p>
                 </div>
                 <div class="doc-meta">
                     <h2>COTIZACIÓN</h2>
-                    <p>N° <span id="doc-id">COT-0000</span></p>
-                    <p>Fecha: <span id="doc-fecha">DD/MM/AAAA</span></p>
-                    <p>Vigencia: 15 días</p>
+                    <p>N° <span id="doc-id" contenteditable="true">COT-0000</span></p>
+                    <p>Fecha: <span id="doc-fecha" contenteditable="true">DD/MM/AAAA</span></p>
+                    <p contenteditable="true">Vigencia: 15 días</p>
                 </div>
             </div>
             
@@ -449,11 +449,11 @@
             <div class="doc-info">
                 <div class="doc-client">
                     <h4>COTIZADO PARA</h4>
-                    <h3 id="doc-client-name">[Nombre del cliente o empresa]</h3>
-                    <p id="doc-client-email">[correo del cliente]</p>
-                    <p id="doc-client-rut">[RUT del cliente]</p>
+                    <h3 id="doc-client-name" contenteditable="true">[Nombre del cliente o empresa]</h3>
+                    <p id="doc-client-email" contenteditable="true">[correo del cliente]</p>
+                    <p id="doc-client-rut" contenteditable="true">[RUT del cliente]</p>
                 </div>
-                <div class="doc-terms">
+                <div class="doc-terms" contenteditable="true">
                     <h4>CONDICIONES DE PAGO</h4>
                     <p>Anticipo: 50% para iniciar</p>
                     <p>Saldo: contra entrega</p>
@@ -479,22 +479,22 @@
                 <table class="doc-totals">
                     <tr>
                         <td>Subtotal</td>
-                        <td id="doc-subtotal">$ 0</td>
+                        <td id="doc-subtotal" contenteditable="true">$ 0</td>
                     </tr>
                     <tr>
                         <td>IVA (19%)</td>
-                        <td id="doc-iva">$ 0</td>
+                        <td id="doc-iva" contenteditable="true">$ 0</td>
                     </tr>
                     <tr class="doc-total-row">
                         <td>TOTAL</td>
-                        <td id="doc-total">$ 0</td>
+                        <td id="doc-total" contenteditable="true">$ 0</td>
                     </tr>
                 </table>
             </div>
             
             <hr class="doc-divider" style="margin-top: 30px;">
             
-            <div class="doc-notes">
+            <div class="doc-notes" contenteditable="true">
                 <h4>NOTAS Y TÉRMINOS</h4>
                 <p>Esta cotización tiene una vigencia de 15 días naturales a partir de la fecha de emisión. Los precios incluyen únicamente los conceptos descritos. Cualquier trabajo adicional se cotizará por separado.</p>
                 <p>[Agrega aquí tus garantías, alcances no incluidos o condiciones especiales.]</p>
@@ -502,7 +502,7 @@
             
             <div class="doc-signature">
                 <div class="line"></div>
-                <p>Nombre y firma de aceptación</p>
+                <p contenteditable="true">Nombre y firma de aceptación</p>
             </div>
             
             <div class="doc-footer">
@@ -513,7 +513,7 @@
 </div>
 
 <!-- ═══════════ JAVASCRIPT ═══════════ -->
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 
 </body>
 </html>
