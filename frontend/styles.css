@@ -1326,3 +1326,34 @@ tbody tr {
         margin-bottom: 4px !important;
     }
 }
+
+
+/* OVERRIDES PARA FONDO BLANCO EN COTIZACIÓN */
+#wysiwyg-container {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+#wysiwyg-container .doc-table th {
+    background: #e5e7eb !important;
+    color: #000000 !important;
+    border: 1px solid #9ca3af !important;
+}
+
+#wysiwyg-container .doc-table td, #wysiwyg-container .doc-totals td {
+    border: 1px solid #9ca3af !important;
+    color: #000000 !important;
+}
+
+#wysiwyg-container .wysiwyg-input:hover {
+    outline: 1px dashed rgba(0, 0, 0, 0.4) !important;
+    background: rgba(0,0,0,0.03) !important;
+}
+
+#wysiwyg-container .btn-remove {
+    color: #ef4444 !important;
+}
+
+#wysiwyg-container h1, #wysiwyg-container p, #wysiwyg-container span, #wysiwyg-container div {
+    color: #000000 !important;
+}
