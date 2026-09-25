@@ -1126,8 +1126,6 @@ tbody tr {
     color: #ffffff;
     font-family: Arial, sans-serif;
     padding: 40px;
-    height: 70vh;
-    overflow-y: auto;
 }
 
 .doc-header {
@@ -1280,32 +1278,28 @@ tbody tr {
         background: #2b2b2b !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
-    }
-    .app-layout, .toast-container, .mobile-toggle, .print-hide {
-        display: none !important;
-    }
-    .modal-overlay {
-        display: none !important;
-    }
-    #modal-preview {
-        display: block !important;
-        position: static;
-        background: none;
-        opacity: 1;
-        visibility: visible;
-    }
-    .modal {
-        box-shadow: none;
-        border: none;
-        transform: none;
-        width: 100%;
-        max-width: none;
+        margin: 0;
         padding: 0;
-        background: transparent !important;
     }
-    .print-content {
-        height: auto;
-        overflow: visible;
-        padding: 20px;
+    .sidebar, .page-header, .action-bar, .toast-container, .mobile-toggle, .print-hide {
+        display: none !important;
+    }
+    .main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .section:not(.active) {
+        display: none !important;
+    }
+    #wysiwyg-container {
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    .modal-overlay, .modal {
+        display: none !important;
     }
 }

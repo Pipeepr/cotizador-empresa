@@ -305,6 +305,29 @@ const modalConfirm = {
     }
 };
 
+// ═══════════ MODAL: PRODUCTO ═══════════
+const modalProducto = {
+    el: () => document.getElementById('modal-producto'),
+
+    open() {
+        const overlay = this.el();
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+        // Focus trap
+        const firstInput = overlay.querySelector('input, select, textarea');
+        if (firstInput) setTimeout(() => firstInput.focus(), 100);
+        document.body.style.overflow = 'hidden';
+    },
+
+    close() {
+        const overlay = this.el();
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+        document.getElementById('form-producto').reset();
+        document.body.style.overflow = '';
+    }
+};
+
 // ═══════════ GUARDAR CLIENTE ═══════════
 async function guardarCliente(event) {
     event.preventDefault();
@@ -351,6 +374,50 @@ async function guardarCliente(event) {
     }
 }
 
+// ═══════════ GUARDAR PRODUCTO ═══════════
+async function guardarProducto(event) {
+    event.preventDefault();
+
+    const codigo_sku = document.getElementById('prod-codigo').value.trim();
+    const nombre = document.getElementById('prod-nombre').value.trim();
+    const precio_base = document.getElementById('prod-precio').value;
+    const stock = document.getElementById('prod-stock').value || 0;
+
+    if (!codigo_sku || !nombre || !precio_base) {
+        showToast('Código, Nombre y Precio son obligatorios', 'error');
+        return;
+    }
+
+    const btn = event.target.querySelector('button[type="submit"]');
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Guardando...`;
+
+    try {
+        const res = await fetch(`${API}/productos`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ codigo_sku, nombre, precio_base, stock }),
+        });
+
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error(text);
+        }
+
+        const nuevoProducto = await res.json();
+        productos.push(nuevoProducto);
+        renderSelectProductos();
+        modalProducto.close();
+        showToast(`Producto "${escapeHtml(nombre)}" creado exitosamente`, 'success');
+    } catch (err) {
+        showToast('Error al guardar el producto. ¿Código duplicado?', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
+
 // ═══════════ COTIZACIÓN: WYSIWYG EDITOR ═══════════
 function actualizarClienteDocs() {
     const clienteId = document.getElementById('select-cliente').value;
@@ -358,8 +425,9 @@ function actualizarClienteDocs() {
     if (!cliente) return;
     
     document.getElementById('doc-client-name').textContent = cliente.empresa || cliente.nombre;
-    document.getElementById('doc-client-email').textContent = cliente.email || 'N/A';
-    document.getElementById('doc-client-rut').textContent = cliente.rut || 'N/A';
+    document.getElementById('doc-client-contacto').textContent = "Atención a: " + (cliente.empresa ? cliente.nombre : "");
+    document.getElementById('doc-client-email').textContent = "Email: " + (cliente.email || 'N/A');
+    document.getElementById('doc-client-rut').textContent = "RUT: " + (cliente.rut || 'N/A');
 }
 
 function agregarLineaWysiwyg(sku = null) {
@@ -537,6 +605,7 @@ document.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         modalCliente.close();
+        modalProducto.close();
         modalConfirm.cancel();
     }
 });
@@ -544,5 +613,6 @@ document.addEventListener('keydown', (e) => {
 // Close modals when clicking overlay
 document.addEventListener('click', (e) => {
     if (e.target.id === 'modal-cliente') modalCliente.close();
+    if (e.target.id === 'modal-producto') modalProducto.close();
     if (e.target.id === 'modal-confirm') modalConfirm.cancel();
 });

@@ -23,7 +23,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
     <!-- Styles -->
-    <link rel="stylesheet" href="styles.css?v=5" />
+    <link rel="stylesheet" href="styles.css?v=6" />
 </head>
 <body>
 
@@ -107,6 +107,10 @@
                 <select id="select-producto" class="form-control" onchange="agregarLineaWysiwyg(this.value)" style="max-width: 250px; background: #2b2b2b; color: white; border: 1px solid #444; border-radius: 6px;">
                     <option value="" disabled selected>+ Añadir desde base de datos</option>
                 </select>
+                <button class="btn btn-outline" onclick="modalProducto.open()" id="btn-create-producto" style="border: 1px solid #555; background: #3f3f46; color: white;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                    Crear Producto DB
+                </button>
                 <button class="btn btn-primary" onclick="agregarLineaWysiwyg()" id="btn-add-linea">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                     Añadir Producto
@@ -139,12 +143,14 @@
                     <div class="doc-client">
                         <h4>COTIZADO PARA</h4>
                         <!-- Select interactivo dentro del doc -->
-                        <select id="select-cliente" class="wysiwyg-select print-hide" aria-label="Seleccionar Cliente" onchange="actualizarClienteDocs()">
-                            <option value="" disabled selected>Seleccione un cliente...</option>
+                        <select id="select-cliente" class="wysiwyg-select print-hide" aria-label="Seleccionar Cliente" onchange="actualizarClienteDocs()" style="margin-bottom: 10px;">
+                            <option value="" disabled selected>Seleccione un cliente de la Base de Datos...</option>
                         </select>
-                        <h3 id="doc-client-name" contenteditable="true" spellcheck="false" style="display:none;">[Nombre del cliente o empresa]</h3>
-                        <p id="doc-client-email" contenteditable="true" spellcheck="false">[correo del cliente]</p>
-                        <p id="doc-client-rut" contenteditable="true" spellcheck="false">[RUT del cliente]</p>
+                        <h3 id="doc-client-name" contenteditable="true" spellcheck="false">[Nombre de Empresa o Cliente]</h3>
+                        <p id="doc-client-contacto" contenteditable="true" spellcheck="false">Atención a: [Nombre del Contacto]</p>
+                        <p id="doc-client-rut" contenteditable="true" spellcheck="false">RUT: [RUT del cliente]</p>
+                        <p id="doc-client-email" contenteditable="true" spellcheck="false">Email: [correo del cliente]</p>
+                        <p id="doc-client-direccion" contenteditable="true" spellcheck="false">Dirección: [Dirección del Cliente]</p>
                     </div>
                     <div class="doc-terms" contenteditable="true" spellcheck="false">
                         <h4>CONDICIONES DE PAGO</h4>
@@ -370,6 +376,76 @@
     </div>
 </div>
 
+<!-- ═══════════ MODAL: NUEVO PRODUCTO ═══════════ -->
+<div class="modal-overlay"
+     id="modal-producto"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="modal-producto-title"
+     aria-hidden="true">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="modal-producto-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                Nuevo Producto
+            </h3>
+            <button class="modal-close"
+                    onclick="modalProducto.close()"
+                    aria-label="Cerrar modal">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+        </div>
+        <form id="form-producto" onsubmit="guardarProducto(event)" novalidate>
+            <div class="form-row form-row-2">
+                <div class="form-group">
+                    <label class="form-label" for="prod-codigo">Código SKU *</label>
+                    <input type="text"
+                           class="form-control"
+                           id="prod-codigo"
+                           placeholder="Ej: ITEM-100"
+                           required
+                           aria-required="true" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="prod-nombre">Descripción *</label>
+                    <input type="text"
+                           class="form-control"
+                           id="prod-nombre"
+                           placeholder="Nombre del producto"
+                           required
+                           aria-required="true" />
+                </div>
+            </div>
+            <div class="form-row form-row-2">
+                <div class="form-group">
+                    <label class="form-label" for="prod-precio">Precio Unitario *</label>
+                    <input type="number"
+                           class="form-control"
+                           id="prod-precio"
+                           placeholder="0"
+                           min="0"
+                           required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="prod-stock">Stock</label>
+                    <input type="number"
+                           class="form-control"
+                           id="prod-stock"
+                           placeholder="0"
+                           min="0" />
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-ghost" onclick="modalProducto.close()">Cancelar</button>
+                <button type="submit" class="btn btn-success" id="btn-submit-producto">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg>
+                    Guardar Producto
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- ═══════════ MODAL: CONFIRMACIÓN ═══════════ -->
 <div class="modal-overlay"
      id="modal-confirm"
@@ -397,7 +473,7 @@
 
 
 <!-- ═══════════ JAVASCRIPT ═══════════ -->
-<script src="app.js?v=7"></script>
+<script src="app.js?v=8"></script>
 
 </body>
 </html>
