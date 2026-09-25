@@ -124,10 +124,14 @@
             <!-- WYSIWYG Editor Container -->
             <div id="wysiwyg-container" class="print-content" style="box-shadow: 0 10px 40px rgba(0,0,0,0.6); border-radius: 8px; margin: 0 auto; max-width: 1000px; padding: 40px; position: relative; border: 1px solid #444;">
                 <div class="doc-header">
-                    <div class="doc-company">
-                        <h1 contenteditable="true" spellcheck="false">[NOMBRE DE TU EMPRESA]</h1>
-                        <p contenteditable="true" spellcheck="false">[Tu nombre] - [correo@empresa.com] - [Teléfono]</p>
-                        <p contenteditable="true" spellcheck="false">[Dirección / Ciudad / País]</p>
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <img src="logo.jpg" alt="Logo Tornometal" style="max-height: 80px; max-width: 250px; object-fit: contain;">
+                        <div class="doc-company">
+                            <h1 contenteditable="true" spellcheck="false" style="margin-bottom: 5px; font-size: 24px;">TORNOMETAL S.P.A</h1>
+                            <p contenteditable="true" spellcheck="false">RUT: 77.049.848-1 | Giro: METALMECÁNICA</p>
+                            <p contenteditable="true" spellcheck="false">Río Calle Calle 1764, Comuna Conchalí</p>
+                            <p contenteditable="true" spellcheck="false">Fono: +56977907873</p>
+                        </div>
                     </div>
                     <div class="doc-meta">
                         <h2>COTIZACIÓN</h2>
@@ -152,11 +156,10 @@
                         <p id="doc-client-email" contenteditable="true" spellcheck="false">Email: [correo del cliente]</p>
                         <p id="doc-client-direccion" contenteditable="true" spellcheck="false">Dirección: [Dirección del Cliente]</p>
                     </div>
-                    <div class="doc-terms" contenteditable="true" spellcheck="false">
-                        <h4>CONDICIONES DE PAGO</h4>
-                        <p>Anticipo: 50% para iniciar</p>
-                        <p>Saldo: contra entrega</p>
-                        <p>Forma de pago: transferencia bancaria</p>
+                    <div class="doc-terms" contenteditable="true" spellcheck="false" style="border: 2px solid #555; padding: 15px; border-radius: 8px; background: rgba(255,255,255,0.02); min-width: 250px;">
+                        <h4 style="margin-bottom: 8px; border-bottom: 1px solid #555; padding-bottom: 4px;">CONDICIONES DE VENTA Y PAGO</h4>
+                        <p style="margin-bottom: 4px;">Forma de pago: 30 días fecha de factura</p>
+                        <p>Entrega: 7 días emitida orden de compra</p>
                     </div>
                 </div>
                 
