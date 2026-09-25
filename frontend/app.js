@@ -355,182 +355,127 @@ async function guardarCliente(event) {
     }
 }
 
-// ═══════════ COTIZACIÓN: AGREGAR LÍNEA ═══════════
-function agregarLinea() {
-    const sku = document.getElementById('select-producto').value;
-    const cantInput = document.getElementById('input-cantidad');
-    const cant = parseInt(cantInput.value, 10);
-
-    if (!sku) {
-        showToast('Selecciona un producto primero', 'error');
-        return;
-    }
-    if (!cant || cant < 1) {
-        showToast('La cantidad debe ser al menos 1', 'error');
-        return;
-    }
-
-    const prod = productos.find(p => p.codigo_sku === sku);
-    if (!prod) {
-        showToast('Producto no encontrado', 'error');
-        return;
-    }
-
-    // Check if product already in list — if so, update quantity
-    const existing = lineas.find(l => l.producto_sku === sku);
-    if (existing) {
-        existing.cantidad += cant;
-    } else {
-        lineas.push({
-            producto_sku: sku,
-            nombre: prod.nombre,
-            cantidad: cant,
-            precio_venta: Number(prod.precio_base) || 0,
-        });
-    }
-
-    // Reset form
-    document.getElementById('select-producto').value = '';
-    cantInput.value = 1;
-
-    dibujarTablaCotizacion();
-    showToast(`${escapeHtml(prod.nombre)} agregado`, 'success');
+// ═══════════ COTIZACIÓN: WYSIWYG EDITOR ═══════════
+function actualizarClienteDocs() {
+    const clienteId = document.getElementById('select-cliente').value;
+    const cliente = clientes.find(c => c.id == clienteId);
+    if (!cliente) return;
+    
+    document.getElementById('doc-client-name').textContent = cliente.empresa || cliente.nombre;
+    document.getElementById('doc-client-email').textContent = cliente.email || 'N/A';
+    document.getElementById('doc-client-rut').textContent = cliente.rut || 'N/A';
 }
 
-// ═══════════ COTIZACIÓN: QUITAR LÍNEA ═══════════
-async function quitarLinea(index) {
-    const item = lineas[index];
-    if (!item) return;
-
-    const confirmed = await modalConfirm.show(
-        `¿Eliminar "${item.nombre}" de la cotización?`
-    );
-
-    if (!confirmed) return;
-
-    lineas.splice(index, 1);
-    dibujarTablaCotizacion();
-    showToast(`${escapeHtml(item.nombre)} eliminado`, 'info');
-}
-
-// ═══════════ COTIZACIÓN: DIBUJAR TABLA ═══════════
-function dibujarTablaCotizacion() {
+function agregarLineaWysiwyg(sku = null) {
     const tbody = document.getElementById('tabla-cotizacion');
-    if (!tbody) return;
-
-    if (lineas.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6">
-            <div class="empty-state">
-                <div class="empty-icon">${Icons.clipboardList}</div>
-                <p>Agrega productos para comenzar la cotización</p>
-            </div>
-        </td></tr>`;
-        document.getElementById('total-neto').textContent = '$0';
-        document.getElementById('total-iva').textContent = '$0';
-        document.getElementById('total-final').textContent = '$0';
-        return;
+    
+    // Quitar estado vacío
+    if (tbody.querySelector('.empty-state')) {
+        tbody.innerHTML = '';
     }
+    
+    let nombre = "Nuevo producto";
+    let precio = 0;
+    
+    if (sku) {
+        const prod = productos.find(p => p.codigo_sku === sku);
+        if (prod) {
+            nombre = prod.nombre;
+            precio = Number(prod.precio_base) || 0;
+        }
+        // Reset the select
+        document.getElementById('select-producto').value = "";
+    }
+    
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td style="text-align: left;">
+            <div style="display:flex; align-items:center; gap: 8px;">
+                <button class="btn-remove print-hide" onclick="this.closest('tr').remove(); recalcularTotalesWysiwyg();" title="Eliminar" style="padding: 2px;">
+                    ${Icons.x}
+                </button>
+                <input type="text" class="wysiwyg-input" placeholder="Descripción del producto..." value="${escapeHtml(nombre)}">
+            </div>
+        </td>
+        <td style="text-align: center;">
+            <input type="number" class="wysiwyg-input qty-input" value="1" min="1" onchange="recalcularTotalesWysiwyg()" onkeyup="recalcularTotalesWysiwyg()" style="text-align: center;">
+        </td>
+        <td style="text-align: right;">
+            <input type="number" class="wysiwyg-input price-input" value="${precio}" min="0" onchange="recalcularTotalesWysiwyg()" onkeyup="recalcularTotalesWysiwyg()" style="text-align: right;">
+        </td>
+        <td style="text-align: right; font-weight: bold;" class="row-total">
+            ${formatCLP(precio)}
+        </td>
+    `;
+    tbody.appendChild(tr);
+    recalcularTotalesWysiwyg();
+}
 
+function recalcularTotalesWysiwyg() {
+    const tbody = document.getElementById('tabla-cotizacion');
+    const rows = tbody.querySelectorAll('tr');
     let neto = 0;
-    tbody.innerHTML = lineas.map((l, i) => {
-        const sub = l.cantidad * l.precio_venta;
-        neto += sub;
-        return `
-            <tr>
-                <td><span class="badge badge-info">${escapeHtml(l.producto_sku)}</span></td>
-                <td>${escapeHtml(l.nombre)}</td>
-                <td>${formatCLP(l.precio_venta)}</td>
-                <td>${l.cantidad}</td>
-                <td><strong>${formatCLP(sub)}</strong></td>
-                <td>
-                    <button class="btn-remove" onclick="quitarLinea(${i})"
-                            aria-label="Eliminar ${escapeHtml(l.nombre)}"
-                            title="Eliminar">
-                        ${Icons.x}
-                    </button>
-                </td>
-            </tr>
-        `;
-    }).join('');
-
+    
+    rows.forEach(tr => {
+        const qtyInput = tr.querySelector('.qty-input');
+        const priceInput = tr.querySelector('.price-input');
+        if (!qtyInput || !priceInput) return;
+        
+        const qty = parseFloat(qtyInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        const subtotal = qty * price;
+        neto += subtotal;
+        
+        tr.querySelector('.row-total').textContent = formatCLP(subtotal);
+    });
+    
     const iva = neto * 0.19;
     const total = neto + iva;
-
+    
     document.getElementById('total-neto').textContent = formatCLP(neto);
     document.getElementById('total-iva').textContent = formatCLP(iva);
     document.getElementById('total-final').textContent = formatCLP(total);
 }
 
-// ═══════════ MODAL: PREVIEW / PRINT ═══════════
-const modalPreview = {
-    overlay: null,
-    init() {
-        this.overlay = document.getElementById('modal-preview');
-        // Handle clicking outside to close
-        this.overlay.addEventListener('click', (e) => {
-            if (e.target === this.overlay) this.close();
-        });
-        // Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.overlay.classList.contains('open')) {
-                this.close();
-            }
-        });
-    },
-    open() {
-        if (!this.overlay) this.init();
-        this.overlay.classList.add('open');
-        this.overlay.setAttribute('aria-hidden', 'false');
-    },
-    close() {
-        this.overlay.classList.remove('open');
-        this.overlay.setAttribute('aria-hidden', 'true');
-    }
-};
-
-function generarDocumentoCotizacion(id, clienteId, neto, iva, total) {
-    const cliente = clientes.find(c => c.id == clienteId);
-    
-    document.getElementById('doc-id').textContent = `COT-${String(id).padStart(4, '0')}`;
-    const date = new Date();
-    document.getElementById('doc-fecha').textContent = date.toLocaleDateString('es-CL');
-    
-    document.getElementById('doc-client-name').textContent = cliente ? cliente.empresa || cliente.nombre : 'Cliente';
-    document.getElementById('doc-client-email').textContent = cliente ? cliente.email : '';
-    document.getElementById('doc-client-rut').textContent = cliente ? cliente.rut : '';
-    
-    const tbody = document.getElementById('doc-table-body');
-    tbody.innerHTML = lineas.map(l => `
-        <tr>
-            <td style="text-align: left;" contenteditable="true">${escapeHtml(l.nombre)}</td>
-            <td style="text-align: center;" contenteditable="true">${l.cantidad}</td>
-            <td style="text-align: right;" contenteditable="true">${formatCLP(l.precio_venta)}</td>
-            <td style="text-align: right;" contenteditable="true">${formatCLP(l.cantidad * l.precio_venta)}</td>
-        </tr>
-    `).join('');
-    
-    document.getElementById('doc-subtotal').textContent = formatCLP(neto);
-    document.getElementById('doc-iva').textContent = formatCLP(iva);
-    document.getElementById('doc-total').textContent = formatCLP(total);
-    
-    modalPreview.open();
-}
-
-// ═══════════ COTIZACIÓN: GUARDAR EN BD ═══════════
+// ═══════════ COTIZACIÓN: GUARDAR Y PDF EN BD ═══════════
 async function guardarCotizacion() {
     const clienteId = document.getElementById('select-cliente').value;
 
     if (!clienteId) {
-        showToast('Selecciona un cliente', 'error');
+        showToast('Selecciona un cliente de la lista en el documento', 'error');
         return;
     }
-    if (lineas.length === 0) {
-        showToast('Agrega al menos un producto', 'error');
+    
+    const tbody = document.getElementById('tabla-cotizacion');
+    const rows = tbody.querySelectorAll('tr');
+    if (rows.length === 0 || tbody.querySelector('.empty-state')) {
+        showToast('Agrega al menos un producto a la tabla', 'error');
         return;
     }
 
+    const payloadLineas = [];
     let neto = 0;
-    lineas.forEach(l => { neto += l.cantidad * l.precio_venta; });
+    
+    rows.forEach((tr, index) => {
+        const descInput = tr.querySelector('input[type="text"]');
+        const qtyInput = tr.querySelector('.qty-input');
+        const priceInput = tr.querySelector('.price-input');
+        
+        if (!descInput) return;
+        
+        const nombre = descInput.value || \`Item \${index + 1}\`;
+        const cantidad = parseFloat(qtyInput.value) || 1;
+        const precio_venta = parseFloat(priceInput.value) || 0;
+        
+        payloadLineas.push({
+            producto_sku: \`ITEM-\${index + 1}\`,
+            nombre,
+            cantidad,
+            precio_venta
+        });
+        neto += cantidad * precio_venta;
+    });
+
     const iva = neto * 0.19;
     const total = neto + iva;
 
@@ -539,16 +484,16 @@ async function guardarCotizacion() {
         subtotal: neto,
         iva,
         total,
-        detalles: lineas,
+        detalles: payloadLineas,
     };
 
     const btn = document.getElementById('btn-guardar-cotizacion');
     const originalHTML = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = `<span class="spinner"></span> Guardando...`;
+    btn.innerHTML = \`<span class="spinner"></span> Guardando...\`;
 
     try {
-        const res = await fetch(`${API}/cotizaciones`, {
+        const res = await fetch(\`\${API}/cotizaciones\`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -557,15 +502,17 @@ async function guardarCotizacion() {
         if (!res.ok) throw new Error('Error al guardar');
 
         const data = await res.json();
-        showToast(`Cotización #${data.id} guardada con éxito`, 'success');
+        
+        // Actualiza el numero de COT visualmente
+        document.getElementById('doc-id').textContent = \`COT-\${String(data.id).padStart(4, '0')}\`;
+        
+        showToast(\`Cotización #\${data.id} guardada. Generando PDF...\`, 'success');
 
-        // Generar el documento PDF ANTES de limpiar las líneas
-        generarDocumentoCotizacion(data.id, clienteId, neto, iva, total);
+        // Disparar PDF
+        setTimeout(() => {
+            window.print();
+        }, 500);
 
-        // Reset
-        lineas = [];
-        document.getElementById('select-cliente').value = '';
-        dibujarTablaCotizacion();
     } catch (err) {
         showToast('Error al guardar la cotización', 'error');
     } finally {
