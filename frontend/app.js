@@ -595,7 +595,11 @@ async function guardarCotizacion() {
 
         // Disparar PDF
         setTimeout(() => {
+            const ot = document.title;
+            const docId = document.getElementById('doc-id').textContent;
+            document.title = `N°COTIZACION ${docId}`;
             window.print();
+            setTimeout(() => document.title = ot, 1000);
         }, 500);
 
     } catch (err) {
