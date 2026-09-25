@@ -129,6 +129,21 @@ app.post('/clientes', requireAuth, async (req, res) => {
   }
 });
 
+// Endpoint 2.1: ELIMINAR un cliente
+app.delete('/clientes/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM clientes WHERE id = $1', [id]);
+    res.json({ success: true });
+  } catch (err) {
+    if (err.code === '23503') {
+       return res.status(400).json({ error: 'No se puede eliminar este cliente porque ya tiene cotizaciones guardadas. Debes eliminar las cotizaciones primero.' });
+    }
+    console.error(err.message);
+    res.status(500).json({ error: 'Error al eliminar cliente' });
+  }
+});
+
 // 3. OBTENER todos los productos
 app.get('/productos', requireAuth, async (req, res) => {
   try {
@@ -186,6 +201,17 @@ app.post('/cotizaciones', requireAuth, async (req, res) => {
   } finally {
     client.release();
   }
+});
+
+// Endpoint para reiniciar el contador de cotizaciones a cero
+app.post('/api/reset-cotizaciones', requireAuth, async (req, res) => {
+    try {
+        await pool.query('TRUNCATE cotizaciones CASCADE');
+        await pool.query('ALTER SEQUENCE cotizaciones_id_seq RESTART WITH 1');
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 // Catch-all: servir index.html para cualquier ruta no-API
 app.use((req, res) => {

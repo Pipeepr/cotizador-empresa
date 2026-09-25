@@ -146,7 +146,7 @@ async function cargarClientes() {
     } catch (e) {
         showToast('Error al conectar con el servidor. Â¿EstÃ¡ corriendo el backend?', 'error');
         if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="5">
+            tbody.innerHTML = `<tr><td colspan="6">
                 <div class="empty-state">
                     <div class="empty-icon">${Icons.alertCircle}</div>
                     <p>Error al cargar clientes. Verifica la conexiÃ³n.</p>
@@ -212,7 +212,7 @@ function renderTablaClientes() {
         const msg = searchClienteQuery
             ? `No se encontraron clientes para "${escapeHtml(searchClienteQuery)}"`
             : 'No hay clientes registrados';
-        tbody.innerHTML = `<tr><td colspan="5">
+        tbody.innerHTML = `<tr><td colspan="6">
             <div class="empty-state">
                 <div class="empty-icon">${Icons.users}</div>
                 <p>${msg}</p>
@@ -229,6 +229,11 @@ function renderTablaClientes() {
             <td>${escapeHtml(c.rut)}</td>
             <td>${c.email ? escapeHtml(c.email) : '<span style="color:var(--text-muted)">â€”</span>'}</td>
             <td>${c.empresa ? escapeHtml(c.empresa) : '<span style="color:var(--text-muted)">â€”</span>'}</td>
+            <td>
+                <button type="button" class="btn btn-outline" style="color:var(--danger-color); border-color:var(--danger-color); padding:4px 8px; font-size:12px;" onclick="eliminarCliente(${c.id}, '${escapeHtml(c.nombre)}')">
+                    Borrar
+                </button>
+            </td>
         </tr>
     `).join('');
 
@@ -627,3 +632,49 @@ document.addEventListener('click', (e) => {
     if (e.target.id === 'modal-producto') modalProducto.close();
     if (e.target.id === 'modal-confirm') modalConfirm.cancel();
 });
+
+ 
+ / /   P%P%P%P%P%P%P%P%P%P%P%  E L I M I N A R   C L I E N T E   P%P%P%P%P%P%P%P%P%P%P%
+ a s y n c   f u n c t i o n   e l i m i n a r C l i e n t e ( i d ,   n o m b r e )   { 
+         c o n s t   c o n f i r m   =   a w a i t   m o d a l C o n f i r m . s h o w ( ' ¿ E s t á s   s e g u r o   d e   q u e   d e s e a s   e l i m i n a r   a   '   +   n o m b r e   +   ' ?   E s t a   a c c i ó n   n o   s e   p u e d e   d e s h a c e r . ' ) ; 
+         i f   ( ! c o n f i r m )   r e t u r n ; 
+ 
+         t r y   { 
+                 c o n s t   r e s   =   a w a i t   f e t c h ( A P I   +   ' / c l i e n t e s / '   +   i d ,   {   m e t h o d :   ' D E L E T E '   } ) ; 
+                 i f   ( r e s . s t a t u s   = = =   4 0 1 )   { 
+                         w i n d o w . l o c a t i o n . h r e f   =   ' / l o g i n ' ; 
+                         r e t u r n ; 
+                 } 
+                 i f   ( ! r e s . o k )   { 
+                         c o n s t   d a t a   =   a w a i t   r e s . j s o n ( ) ; 
+                         t h r o w   n e w   E r r o r ( d a t a . e r r o r   | |   ' E r r o r   a l   e l i m i n a r ' ) ; 
+                 } 
+                 
+                 s h o w T o a s t ( ' C l i e n t e   e l i m i n a d o   c o r r e c t a m e n t e ' ,   ' s u c c e s s ' ) ; 
+                 a w a i t   c a r g a r C l i e n t e s ( ) ; 
+         }   c a t c h   ( e r r )   { 
+                 s h o w T o a s t ( e r r . m e s s a g e ,   ' e r r o r ' ) ; 
+         } 
+ } 
+ 
+ / /   P%P%P%P%P%P%P%P%P%P%P%  R E I N I C I A R   C O T I Z A C I O N E S   P%P%P%P%P%P%P%P%P%P%P%
+ a s y n c   f u n c t i o n   r e s e t C o t i z a c i o n e s ( )   { 
+         c o n s t   c o n f i r m   =   a w a i t   m o d a l C o n f i r m . s h o w ( '  &þ  A D V E R T E N C I A :   E s t o   e l i m i n a r á   T O D A S   l a s   c o t i z a c i o n e s   g u a r d a d a s   e n   l a   b a s e   d e   d a t o s   y   r e i n i c i a r á   e l   n ú m e r o   a   C O T - 0 0 0 1 .   ¿ E s t á s   a b s o l u t a m e n t e   s e g u r o ? ' ) ; 
+         i f   ( ! c o n f i r m )   r e t u r n ; 
+ 
+         t r y   { 
+                 c o n s t   r e s   =   a w a i t   f e t c h ( A P I   +   ' / a p i / r e s e t - c o t i z a c i o n e s ' ,   {   m e t h o d :   ' P O S T '   } ) ; 
+                 i f   ( r e s . s t a t u s   = = =   4 0 1 )   { 
+                         w i n d o w . l o c a t i o n . h r e f   =   ' / l o g i n ' ; 
+                         r e t u r n ; 
+                 } 
+                 i f   ( ! r e s . o k )   t h r o w   n e w   E r r o r ( ' E r r o r   a l   r e i n i c i a r   e l   c o n t a d o r ' ) ; 
+                 
+                 s h o w T o a s t ( ' E l   c o n t a d o r   s e   h a   r e i n i c i a d o   a   C O T - 0 0 0 0 ' ,   ' s u c c e s s ' ) ; 
+                 d o c u m e n t . g e t E l e m e n t B y I d ( ' d o c - i d ' ) . t e x t C o n t e n t   =   ' C O T - 0 0 0 0 ' ; 
+         }   c a t c h   ( e r r )   { 
+                 s h o w T o a s t ( e r r . m e s s a g e ,   ' e r r o r ' ) ; 
+         } 
+ } 
+  
+ 

@@ -139,6 +139,13 @@
                         </svg>
                         Añadir Producto
                     </button>
+                    <button class="btn btn-outline" style="border-color: var(--danger-color); color: var(--danger-color);" onclick="resetCotizaciones()">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                        </svg>
+                        Reiniciar a 0
+                    </button>
                     <button class="btn btn-success" id="btn-guardar-cotizacion" onclick="guardarCotizacion()">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -364,11 +371,12 @@
                                     <th scope="col">RUT</th>
                                     <th scope="col">Email</th>
                                     <th scope="col">Empresa</th>
+                                    <th scope="col">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="tabla-clientes">
                                 <tr>
-                                    <td colspan="5">
+                                    <td colspan="6">
                                         <div class="empty-state">
                                             <div class="empty-icon">
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -566,7 +574,7 @@
 
 
     <!-- ═══════════ JAVASCRIPT ═══════════ -->
-    <script src="app.js?v=10"></script>
+    <script src="app.js?v=11"></script>
 
 </body>
 
