@@ -111,7 +111,7 @@ app.post('/cotizaciones', async (req, res) => {
   }
 });
 // Catch-all: servir index.html para cualquier ruta no-API
-app.get('*', (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
