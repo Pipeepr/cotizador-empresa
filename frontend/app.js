@@ -390,8 +390,11 @@ function agregarLineaWysiwyg(sku = null) {
                 <button class="btn-remove print-hide" onclick="this.closest('tr').remove(); recalcularTotalesWysiwyg();" title="Eliminar" style="padding: 2px;">
                     ${Icons.x}
                 </button>
-                <input type="text" class="wysiwyg-input" placeholder="Descripción del producto..." value="${escapeHtml(nombre)}">
+                <input type="text" class="wysiwyg-input sku-input" placeholder="CÓDIGO" value="${escapeHtml(sku || '')}" style="width: 80px;">
             </div>
+        </td>
+        <td style="text-align: left;">
+            <input type="text" class="wysiwyg-input desc-input" placeholder="Descripción del producto..." value="${escapeHtml(nombre)}">
         </td>
         <td style="text-align: center;">
             <input type="number" class="wysiwyg-input qty-input" value="1" min="1" onchange="recalcularTotalesWysiwyg()" onkeyup="recalcularTotalesWysiwyg()" style="text-align: center;">
@@ -453,18 +456,20 @@ async function guardarCotizacion() {
     let neto = 0;
     
     rows.forEach((tr, index) => {
-        const descInput = tr.querySelector('input[type="text"]');
+        const skuInput = tr.querySelector('.sku-input');
+        const descInput = tr.querySelector('.desc-input');
         const qtyInput = tr.querySelector('.qty-input');
         const priceInput = tr.querySelector('.price-input');
         
         if (!descInput) return;
         
         const nombre = descInput.value || `Item ${index + 1}`;
+        const sku_val = skuInput ? skuInput.value.trim() : '';
         const cantidad = parseFloat(qtyInput.value) || 1;
         const precio_venta = parseFloat(priceInput.value) || 0;
         
         payloadLineas.push({
-            producto_sku: `ITEM-${index + 1}`,
+            producto_sku: sku_val || null,
             nombre,
             cantidad,
             precio_venta

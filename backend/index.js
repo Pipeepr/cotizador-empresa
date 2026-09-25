@@ -95,8 +95,8 @@ app.post('/cotizaciones', async (req, res) => {
     // Guardar cada producto en el detalle
     for (let item of detalles) {
       await client.query(
-        'INSERT INTO detalle_cotizaciones (cotizacion_id, producto_sku, cantidad, precio_venta) VALUES ($1, $2, $3, $4)',
-        [cotizacion_id, item.producto_sku, item.cantidad, item.precio_venta]
+        'INSERT INTO detalle_cotizaciones (cotizacion_id, producto_sku, nombre, cantidad, precio_venta) VALUES ($1, $2, $3, $4, $5)',
+        [cotizacion_id, item.producto_sku || null, item.nombre, item.cantidad, item.precio_venta]
       );
     }
 
@@ -144,10 +144,14 @@ async function initDB() {
       CREATE TABLE IF NOT EXISTS detalle_cotizaciones (
         id SERIAL PRIMARY KEY,
         cotizacion_id INTEGER REFERENCES cotizaciones(id) ON DELETE CASCADE,
-        producto_sku VARCHAR(50) REFERENCES productos(codigo_sku),
+        producto_sku VARCHAR(50),
+        nombre VARCHAR(255),
         cantidad INTEGER NOT NULL,
         precio_venta DECIMAL(10, 2) NOT NULL
       );
+      
+      ALTER TABLE detalle_cotizaciones ADD COLUMN IF NOT EXISTS nombre VARCHAR(255);
+      ALTER TABLE detalle_cotizaciones DROP CONSTRAINT IF EXISTS detalle_cotizaciones_producto_sku_fkey;
     `);
     console.log('✅ Tablas verificadas/creadas correctamente');
   } catch (err) {
