@@ -137,6 +137,7 @@ async function cargarClientes() {
 
     try {
         const res = await fetch(`${API}/clientes`);
+        if (res.status === 401) window.location.href = '/login.html';
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         clientes = await res.json();
         renderSelectClientes();

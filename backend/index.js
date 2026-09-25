@@ -2,10 +2,50 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { Pool } = require('pg');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
+
+const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_key_cotizapro_2026';
+
+// Middleware de API
+function requireAuth(req, res, next) {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ error: 'No autorizado' });
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (err) {
+        res.status(401).json({ error: 'Token inválido' });
+    }
+}
+
+// Middleware de vistas
+function requireAuthView(req, res, next) {
+    const token = req.cookies.token;
+    if (!token) return res.redirect('/login.html');
+    try {
+        jwt.verify(token, JWT_SECRET);
+        next();
+    } catch (err) {
+        res.redirect('/login.html');
+    }
+}
+
+// Proteger index.html
+app.get('/', requireAuthView, (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
+app.get('/index.html', requireAuthView, (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
 
 // Servir el frontend como archivos estáticos
 app.use(express.static(path.join(__dirname, '../frontend')));
@@ -26,8 +66,41 @@ const pool = process.env.DATABASE_URL
       port: 5432,
     });
 
+// ═══════════ AUTENTICACIÓN ═══════════
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const userRes = await pool.query('SELECT * FROM usuarios WHERE username = $1', [username]);
+        if (userRes.rows.length === 0) return res.status(401).json({ error: 'Credenciales inválidas' });
+        
+        const user = userRes.rows[0];
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(401).json({ error: 'Credenciales inválidas' });
+        
+        const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '12h' });
+        res.cookie('token', token, { 
+            httpOnly: true, 
+            secure: process.env.NODE_ENV === 'production', 
+            sameSite: 'strict',
+            maxAge: 12 * 60 * 60 * 1000 
+        });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Error del servidor' });
+    }
+});
+
+app.post('/api/logout', (req, res) => {
+    res.clearCookie('token');
+    res.json({ success: true });
+});
+
+app.get('/api/check-auth', requireAuth, (req, res) => {
+    res.json({ success: true, user: req.user });
+});
+
 // Endpoint 1: OBTENER todos los clientes
-app.get('/clientes', async (req, res) => {
+app.get('/clientes', requireAuth, async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM clientes ORDER BY nombre ASC');
     res.json(result.rows);
@@ -38,7 +111,7 @@ app.get('/clientes', async (req, res) => {
 });
 
 // Endpoint 2: CREAR un nuevo cliente
-app.post('/clientes', async (req, res) => {
+app.post('/clientes', requireAuth, async (req, res) => {
   const { nombre, rut, email, empresa, contacto, direccion } = req.body;
   try {
     const result = await pool.query(
@@ -53,7 +126,7 @@ app.post('/clientes', async (req, res) => {
 });
 
 // 3. OBTENER todos los productos
-app.get('/productos', async (req, res) => {
+app.get('/productos', requireAuth, async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM productos ORDER BY nombre ASC');
     res.json(result.rows);
@@ -63,7 +136,7 @@ app.get('/productos', async (req, res) => {
 });
 
 // 4. CREAR un producto
-app.post('/productos', async (req, res) => {
+app.post('/productos', requireAuth, async (req, res) => {
   const { codigo_sku, nombre, precio_base, stock } = req.body;
   try {
     const result = await pool.query(
@@ -77,7 +150,7 @@ app.post('/productos', async (req, res) => {
 });
 
 // 5. CREAR cotización (Cabecera + Detalles)
-app.post('/cotizaciones', async (req, res) => {
+app.post('/cotizaciones', requireAuth, async (req, res) => {
   const { cliente_id, subtotal, iva, total, detalles } = req.body;
   // detalles debe ser un array: [{ producto_sku, cantidad, precio_venta }]
 
@@ -120,6 +193,11 @@ app.use((req, res) => {
 async function initDB() {
   try {
     await pool.query(`
+      CREATE TABLE IF NOT EXISTS usuarios (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(50) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL
+      );
       CREATE TABLE IF NOT EXISTS clientes (
         id SERIAL PRIMARY KEY,
         nombre VARCHAR(255) NOT NULL,
@@ -157,6 +235,15 @@ async function initDB() {
       ALTER TABLE clientes ADD COLUMN IF NOT EXISTS contacto VARCHAR(255);
       ALTER TABLE clientes ADD COLUMN IF NOT EXISTS direccion VARCHAR(255);
     `);
+    
+    // Seed admin if not exists
+    const adminCheck = await pool.query('SELECT * FROM usuarios WHERE username = $1', ['admin']);
+    if (adminCheck.rows.length === 0) {
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(process.env.ADMIN_PASS || 'Tornometal2026', salt);
+        await pool.query('INSERT INTO usuarios (username, password) VALUES ($1, $2)', ['admin', hash]);
+    }
+
     console.log('✅ Tablas verificadas/creadas correctamente');
   } catch (err) {
     console.error('⚠️ Error al inicializar tablas:', err.message);
