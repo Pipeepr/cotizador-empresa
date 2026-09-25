@@ -30,21 +30,25 @@ function requireAuth(req, res, next) {
 // Middleware de vistas
 function requireAuthView(req, res, next) {
     const token = req.cookies.token;
-    if (!token) return res.redirect('/login.html');
+    if (!token) return res.redirect('/login');
     try {
         jwt.verify(token, JWT_SECRET);
         next();
     } catch (err) {
-        res.redirect('/login.html');
+        res.redirect('/login');
     }
 }
 
-// Proteger index.html
+// Rutas de vistas
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/login.html'));
+});
+
 app.get('/', requireAuthView, (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 app.get('/index.html', requireAuthView, (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+    res.redirect('/');
 });
 
 // Servir el frontend como archivos estáticos
@@ -246,7 +250,7 @@ async function initDB() {
 
     console.log('✅ Tablas verificadas/creadas correctamente');
   } catch (err) {
-    console.error('⚠️ Error al inicializar tablas:', err.message);
+    console.error('⚠️ Error al inicializar tablas:', err.stack || err);
   }
 }
 
