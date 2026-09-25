@@ -1229,6 +1229,10 @@ tbody tr {
         display: none !important;
     }
     .modal-overlay {
+        display: none !important;
+    }
+    #modal-preview {
+        display: block !important;
         position: static;
         background: none;
         opacity: 1;
