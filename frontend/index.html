@@ -104,6 +104,9 @@
             </div>
 
             <div class="action-bar" style="justify-content: flex-end; margin-bottom: 20px; display: flex; gap: 15px;">
+                <select id="select-producto" class="form-control" onchange="agregarLineaWysiwyg(this.value)" style="max-width: 250px; background: #2b2b2b; color: white; border: 1px solid #444; border-radius: 6px;">
+                    <option value="" disabled selected>+ Añadir desde base de datos</option>
+                </select>
                 <button class="btn btn-primary" onclick="agregarLineaWysiwyg()" id="btn-add-linea">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                     Añadir Producto
@@ -393,7 +396,7 @@
 
 
 <!-- ═══════════ JAVASCRIPT ═══════════ -->
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 
 </body>
 </html>

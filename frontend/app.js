@@ -168,25 +168,21 @@ async function cargarProductos() {
 function renderSelectClientes() {
     const select = document.getElementById('select-cliente');
     if (!select) return;
-    select.innerHTML = '<option value="">Seleccione un cliente...</option>';
+    let options = '<option value="" disabled selected>Seleccione un cliente...</option>';
     clientes.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c.id;
-        opt.textContent = `${c.nombre} — ${c.empresa || 'Sin empresa'}`;
-        select.appendChild(opt);
+        options += `<option value="${c.id}">${escapeHtml(c.nombre)} — ${escapeHtml(c.empresa || 'Sin empresa')}</option>`;
     });
+    select.innerHTML = options;
 }
 
 function renderSelectProductos() {
-    const select = document.getElementById('select-producto');
-    if (!select) return;
-    select.innerHTML = '<option value="">Seleccione un producto...</option>';
+    const selectProducto = document.getElementById('select-producto');
+    if (!selectProducto) return;
+    let options = '<option value="" disabled selected>+ Añadir desde base de datos</option>';
     productos.forEach(p => {
-        const opt = document.createElement('option');
-        opt.value = p.codigo_sku;
-        opt.textContent = `${p.nombre} (${formatCLP(p.precio_base)})`;
-        select.appendChild(opt);
+        options += `<option value="${p.codigo_sku}">${escapeHtml(p.nombre)} - ${formatCLP(p.precio_base)}</option>`;
     });
+    selectProducto.innerHTML = options;
 }
 
 // ═══════════ RENDER: TABLE CLIENTES ═══════════
@@ -463,12 +459,12 @@ async function guardarCotizacion() {
         
         if (!descInput) return;
         
-        const nombre = descInput.value || \`Item \${index + 1}\`;
+        const nombre = descInput.value || `Item ${index + 1}`;
         const cantidad = parseFloat(qtyInput.value) || 1;
         const precio_venta = parseFloat(priceInput.value) || 0;
         
         payloadLineas.push({
-            producto_sku: \`ITEM-\${index + 1}\`,
+            producto_sku: `ITEM-${index + 1}`,
             nombre,
             cantidad,
             precio_venta
@@ -490,10 +486,10 @@ async function guardarCotizacion() {
     const btn = document.getElementById('btn-guardar-cotizacion');
     const originalHTML = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = \`<span class="spinner"></span> Guardando...\`;
+    btn.innerHTML = `<span class="spinner"></span> Guardando...`;
 
     try {
-        const res = await fetch(\`\${API}/cotizaciones\`, {
+        const res = await fetch(`${API}/cotizaciones`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -504,9 +500,9 @@ async function guardarCotizacion() {
         const data = await res.json();
         
         // Actualiza el numero de COT visualmente
-        document.getElementById('doc-id').textContent = \`COT-\${String(data.id).padStart(4, '0')}\`;
+        document.getElementById('doc-id').textContent = `COT-${String(data.id).padStart(4, '0')}`;
         
-        showToast(\`Cotización #\${data.id} guardada. Generando PDF...\`, 'success');
+        showToast(`Cotización #${data.id} guardada. Generando PDF...`, 'success');
 
         // Disparar PDF
         setTimeout(() => {
