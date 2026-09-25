@@ -41,11 +41,11 @@ function requireAuthView(req, res, next) {
 
 // Rutas de vistas
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/login.html'));
+    res.sendFile(path.join(__dirname, '../frontend/login.html'), { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
 });
 
 app.get('/', requireAuthView, (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+    res.sendFile(path.join(__dirname, '../frontend/index.html'), { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
 });
 app.get('/index.html', requireAuthView, (req, res) => {
     res.redirect('/');
@@ -203,16 +203,6 @@ app.post('/cotizaciones', requireAuth, async (req, res) => {
   }
 });
 
-// Endpoint para reiniciar el contador de cotizaciones a cero
-app.post('/api/reset-cotizaciones', requireAuth, async (req, res) => {
-    try {
-        await pool.query('TRUNCATE cotizaciones CASCADE');
-        await pool.query('ALTER SEQUENCE cotizaciones_id_seq RESTART WITH 1');
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
 // Catch-all: servir index.html para cualquier ruta no-API
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
