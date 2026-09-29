@@ -1,284 +1,83 @@
 <!DOCTYPE html>
 <html lang="es">
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description"
-        content="CotizaPro – Sistema profesional de cotizaciones empresariales. Crea y gestiona cotizaciones de forma rápida y organizada." />
-    <meta name="theme-color" content="#0b0f1a" />
-    <meta name="robots" content="noindex, nofollow" />
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description"
+            content="CotizaPro – Sistema profesional de cotizaciones empresariales. Crea y gestiona cotizaciones de forma rápida y organizada." />
+        <meta name="theme-color" content="#0b0f1a" />
+        <meta name="robots" content="noindex, nofollow" />
 
-    <!-- Open Graph -->
-    <meta property="og:title" content="CotizaPro – Cotizador Empresarial" />
-    <meta property="og:description" content="Crea y gestiona cotizaciones de forma rápida y profesional." />
-    <meta property="og:type" content="website" />
+        <!-- Open Graph -->
+        <meta property="og:title" content="CotizaPro – Cotizador Empresarial" />
+        <meta property="og:description" content="Crea y gestiona cotizaciones de forma rápida y profesional." />
+        <meta property="og:type" content="website" />
 
-    <title>CotizaPro – Cotizador Empresarial</title>
+        <title>CotizaPro – Cotizador Empresarial</title>
 
-    <!-- Favicon (inline SVG) -->
-    <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>⚡</text></svg>" />
+        <!-- Favicon (inline SVG) -->
+        <link rel="icon"
+            href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>⚡</text></svg>" />
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet" />
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+            rel="stylesheet" />
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="styles.css?v=11" />
-</head>
+        <!-- Styles -->
+        <link rel="stylesheet" href="styles.css?v=11" />
+    </head>
 
-<body>
+    <body>
 
-    <!-- ═══════════ TOAST CONTAINER (A11y: aria-live region) ═══════════ -->
-    <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+        <!-- ═══════════ TOAST CONTAINER (A11y: aria-live region) ═══════════ -->
+        <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-    <!-- ═══════════ MOBILE SIDEBAR TOGGLE ═══════════ -->
-    <button class="mobile-toggle" id="mobile-toggle" onclick="toggleSidebar()" aria-label="Abrir menú de navegación"
-        aria-expanded="false" aria-controls="sidebar">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <line x1="4" x2="20" y1="12" y2="12" />
-            <line x1="4" x2="20" y1="6" y2="6" />
-            <line x1="4" x2="20" y1="18" y2="18" />
-        </svg>
-    </button>
+        <!-- ═══════════ MOBILE SIDEBAR TOGGLE ═══════════ -->
+        <button class="mobile-toggle" id="mobile-toggle" onclick="toggleSidebar()" aria-label="Abrir menú de navegación"
+            aria-expanded="false" aria-controls="sidebar">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="4" x2="20" y1="12" y2="12" />
+                <line x1="4" x2="20" y1="6" y2="6" />
+                <line x1="4" x2="20" y1="18" y2="18" />
+            </svg>
+        </button>
 
-    <!-- ═══════════ APP LAYOUT ═══════════ -->
-    <div class="app-layout">
+        <!-- ═══════════ APP LAYOUT ═══════════ -->
+        <div class="app-layout">
 
-        <!-- ═══════════ SIDEBAR ═══════════ -->
-        <aside class="sidebar" id="sidebar" role="navigation" aria-label="Navegación principal">
-            <div class="sidebar-brand">
-                <h1>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
-                    </svg>
-                    CotizaPro
-                </h1>
-                <p>Sistema de Cotización</p>
-            </div>
-            <nav class="sidebar-nav" role="tablist" aria-label="Secciones">
-                <button class="nav-item active" data-section="cotizacion" onclick="nuevaCotizacionEnBlanco()"
-                    role="tab" aria-selected="true" aria-controls="section-cotizacion" id="tab-cotizacion">
-                    <span class="nav-icon">
+            <!-- ═══════════ SIDEBAR ═══════════ -->
+            <aside class="sidebar" id="sidebar" role="navigation" aria-label="Navegación principal">
+                <div class="sidebar-brand">
+                    <h1>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-                            <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-                            <path d="M12 18v-6" />
-                            <path d="M9 15h6" />
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
                         </svg>
-                    </span>
-                    <span>Nueva Cotización</span>
-                </button>
-                <button class="nav-item" data-section="clientes" onclick="switchSection('clientes')" role="tab"
-                    aria-selected="false" aria-controls="section-clientes" id="tab-clientes">
-                    <span class="nav-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                            <circle cx="9" cy="7" r="4" />
-                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                        </svg>
-                    </span>
-                    <span>Clientes</span>
-                </button>
-                <button class="nav-item" data-section="historial" onclick="switchSection('historial')" role="tab"
-                    aria-selected="false" aria-controls="section-historial" id="tab-historial">
-                    <span class="nav-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <polyline points="14 2 14 8 20 8" />
-                            <line x1="16" y1="13" x2="8" y2="13" />
-                            <line x1="16" y1="17" x2="8" y2="17" />
-                            <polyline points="10 9 9 9 8 9" />
-                        </svg>
-                    </span>
-                    <span>Historial</span>
-                </button>
-            </nav>
-            <div class="sidebar-footer">
-                <p>CotizaPro v1.0</p>
-            </div>
-        </aside>
-
-        <!-- Sidebar mobile backdrop -->
-        <div class="sidebar-backdrop" onclick="closeSidebar()"></div>
-
-        <!-- ═══════════ MAIN CONTENT ═══════════ -->
-        <main class="main-content">
-
-            <!-- ═══════════════════════════════════════
-             SECTION: NUEVA COTIZACIÓN
-             ═══════════════════════════════════════ -->
-            <div class="section active" id="section-cotizacion" role="tabpanel" aria-labelledby="tab-cotizacion"
-                aria-hidden="false">
-
-                <div class="page-header">
-                    <h2>Nueva Cotización</h2>
-                    <p>Selecciona un cliente, agrega productos y genera la cotización</p>
+                        CotizaPro
+                    </h1>
+                    <p>Sistema de Cotización</p>
                 </div>
-
-                <div class="action-bar justify-end">
-                    <select id="select-producto" class="form-control select-dark" onchange="agregarLineaWysiwyg(this.value)">
-                        <option value="" disabled selected>+ Añadir desde base de datos</option>
-                    </select>
-                    <button class="btn btn-outline btn-outline-dark" onclick="modalProducto.open()" id="btn-create-producto">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="icon-sm">
-                            <path d="m7.5 4.27 9 5.15" />
-                            <path
-                                d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-                            <path d="m3.3 7 8.7 5 8.7-5" />
-                            <path d="M12 22V12" />
-                        </svg>
-                        Crear Producto DB
+                <nav class="sidebar-nav" role="tablist" aria-label="Secciones">
+                    <button class="nav-item active" data-section="cotizacion" onclick="nuevaCotizacionEnBlanco()"
+                        role="tab" aria-selected="true" aria-controls="section-cotizacion" id="tab-cotizacion">
+                        <span class="nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                                <path d="M12 18v-6" />
+                                <path d="M9 15h6" />
+                            </svg>
+                        </span>
+                        <span>Nueva Cotización</span>
                     </button>
-                    <button class="btn btn-primary" onclick="agregarLineaWysiwyg()" id="btn-add-linea">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="icon-sm">
-                            <path d="M5 12h14" />
-                            <path d="M12 5v14" />
-                        </svg>
-                        Añadir Producto
-                    <button class="btn btn-primary mr-10" id="btn-modal-correo" onclick="modalCorreo.open()">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm">
-                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                            <polyline points="22,6 12,13 2,6"></polyline>
-                        </svg>
-                        Enviar Correo
-                    </button>
-                    <button class="btn btn-success" id="btn-guardar-cotizacion" onclick="guardarCotizacion()">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="icon-sm">
-                            <path
-                                d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
-                            <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
-                            <path d="M7 3v4a1 1 0 0 0 1 1h7" />
-                        </svg>
-                        Guardar y PDF
-                    </button>
-                </div>
-
-                <!-- WYSIWYG Editor Container -->
-                <div id="wysiwyg-container" class="print-content">
-                    <div class="doc-header">
-                        <div class="doc-header-logo">
-                            <img src="logo.jpg" alt="Logo Tornometal" class="doc-logo">
-                            <div class="doc-company">
-                                <h1 contenteditable="true" spellcheck="false" class="doc-company-title">TORNOMETAL S.P.A</h1>
-                                <p contenteditable="true" spellcheck="false" class="doc-company-subtitle">RUT: 77.049.848-1 | Giro: METALMECÁNICA</p>
-                                <p contenteditable="true" spellcheck="false" class="doc-company-subtitle">Río Calle Calle 1764, Comuna Conchalí</p>
-                                <p contenteditable="true" spellcheck="false" class="doc-company-subtitle mb-0">Fono: +56977907873</p>
-                            </div>
-                        </div>
-                        <div class="doc-meta">
-                            <h2 class="doc-title">COTIZACIÓN</h2>
-                            <p>N° <span id="doc-id" contenteditable="true" spellcheck="false">COT-0000</span></p>
-                            <p>Fecha: <span id="doc-fecha" contenteditable="true" spellcheck="false">DD/MM/AAAA</span>
-                            </p>
-                            <p contenteditable="true" spellcheck="false">Vigencia: 8 días</p>
-                        </div>
-                    </div>
-
-                    <hr class="doc-divider">
-
-                    <div class="doc-info">
-                        <div class="doc-client">
-                            <h4>COTIZADO PARA</h4>
-                            <!-- Select interactivo dentro del doc -->
-                            <select id="select-cliente" class="wysiwyg-select print-hide mb-10"
-                                aria-label="Seleccionar Cliente" onchange="actualizarClienteDocs()">
-                                <option value="" disabled selected>Seleccione un cliente de la Base de Datos...</option>
-                            </select>
-                            <h3 id="doc-client-name" contenteditable="true" spellcheck="false">[Nombre de Empresa o
-                                Cliente]</h3>
-                            <p id="doc-client-contacto" contenteditable="true" spellcheck="false">Atención a: [Nombre
-                                del Contacto]</p>
-                            <p id="doc-client-rut" contenteditable="true" spellcheck="false">RUT: [RUT del cliente]</p>
-                            <p id="doc-client-email" contenteditable="true" spellcheck="false">Email: [correo del
-                                cliente]</p>
-                            <p id="doc-client-direccion" contenteditable="true" spellcheck="false">Dirección: [Dirección
-                                del Cliente]</p>
-                            <p id="doc-client-comuna-ciudad" contenteditable="true" spellcheck="false">Comuna/Ciudad: [Comuna, Ciudad]</p>
-                            <p id="doc-client-giro" contenteditable="true" spellcheck="false">Giro: [Giro de la empresa]</p>
-                        </div>
-                        <div class="doc-terms doc-terms-box" contenteditable="true" spellcheck="false">
-                            <h4 class="doc-terms-title">CONDICIONES DE VENTA Y PAGO</h4>
-                            <p class="doc-terms-text">Forma de pago: 30 días fecha de factura</p>
-                            <p class="doc-terms-text mb-0">Entrega: 7 días emitida orden de compra</p>
-                        </div>
-                    </div>
-
-                    <table class="doc-table">
-                        <thead>
-                            <tr>
-                                <th class="w-75 text-left">CÓDIGO</th>
-                                <th class="text-left">DESCRIPCION</th>
-                                <th class="w-45 text-center">CANT.</th>
-                                <th class="w-80 text-right">P. UNIT.</th>
-                                <th class="w-80 text-right">IMPORTE</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-cotizacion">
-                            <!-- Filas dinámicas editables -->
-                        </tbody>
-                    </table>
-
-                    <div class="doc-totals-wrapper">
-                        <table class="doc-totals">
-                            <tr>
-                                <td>Subtotal</td>
-                                <td id="total-neto">$0</td>
-                            </tr>
-                            <tr>
-                                <td>IVA (19%)</td>
-                                <td id="total-iva">$0</td>
-                            </tr>
-                            <tr class="doc-total-row">
-                                <td>TOTAL</td>
-                                <td id="total-final">$0</td>
-                            </tr>
-                        </table>
-                    </div>
-
-                    <hr class="doc-divider mt-30">
-
-                    <div class="doc-notes" contenteditable="true" spellcheck="false">
-                        <h4>NOTAS Y TÉRMINOS</h4>
-                        <p>Esta cotización tiene una vigencia de 8 días naturales a partir de la fecha de emisión. Los
-                            precios incluyen únicamente los conceptos descritos. Cualquier trabajo adicional se cotizará
-                            por separado.</p>
-                        <p>[Agrega aquí tus garantías, alcances no incluidos o condiciones especiales.]</p>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- ═══════════════════════════════════════
-             SECTION: CLIENTES
-             ═══════════════════════════════════════ -->
-            <div class="section" id="section-clientes" role="tabpanel" aria-labelledby="tab-clientes"
-                aria-hidden="true">
-
-                <div class="page-header">
-                    <h2>Gestión de Clientes</h2>
-                    <p>Administra tu cartera de clientes</p>
-                </div>
-
-                <div class="stats-row" id="clientes-stats">
-                    <div class="stat-card">
-                        <div class="stat-value" id="stat-total-clientes">0</div>
-                        <div class="stat-label">
+                    <button class="nav-item" data-section="clientes" onclick="switchSection('clientes')" role="tab"
+                        aria-selected="false" aria-controls="section-clientes" id="tab-clientes">
+                        <span class="nav-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -286,46 +85,219 @@
                                 <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
                                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                             </svg>
-                            Total Clientes
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="stat-empresas">0</div>
-                        <div class="stat-label">
+                        </span>
+                        <span>Clientes</span>
+                    </button>
+                    <button class="nav-item" data-section="historial" onclick="switchSection('historial')" role="tab"
+                        aria-selected="false" aria-controls="section-historial" id="tab-historial">
+                        <span class="nav-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect width="16" height="20" x="4" y="2" rx="2" ry="2" />
-                                <path d="M9 22v-4h6v4" />
-                                <path d="M8 6h.01" />
-                                <path d="M16 6h.01" />
-                                <path d="M12 6h.01" />
-                                <path d="M12 10h.01" />
-                                <path d="M12 14h.01" />
-                                <path d="M16 10h.01" />
-                                <path d="M16 14h.01" />
-                                <path d="M8 10h.01" />
-                                <path d="M8 14h.01" />
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                                <polyline points="10 9 9 9 8 9" />
                             </svg>
-                            Empresas
-                        </div>
+                        </span>
+                        <span>Historial</span>
+                    </button>
+                </nav>
+                <div class="sidebar-footer">
+                    <p>CotizaPro v1.0</p>
+                </div>
+            </aside>
+
+            <!-- Sidebar mobile backdrop -->
+            <div class="sidebar-backdrop" onclick="closeSidebar()"></div>
+
+            <!-- ═══════════ MAIN CONTENT ═══════════ -->
+            <main class="main-content">
+
+                <!-- ═══════════════════════════════════════
+             SECTION: NUEVA COTIZACIÓN
+             ═══════════════════════════════════════ -->
+                <div class="section active" id="section-cotizacion" role="tabpanel" aria-labelledby="tab-cotizacion"
+                    aria-hidden="false">
+
+                    <div class="page-header">
+                        <h2>Nueva Cotización</h2>
+                        <p>Selecciona un cliente, agrega productos y genera la cotización</p>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="stat-con-email">0</div>
-                        <div class="stat-label">
+
+                    <div class="action-bar justify-end">
+                        <select id="select-producto" class="form-control select-dark"
+                            onchange="agregarLineaWysiwyg(this.value)">
+                            <option value="" disabled selected>+ Añadir desde base de datos</option>
+                        </select>
+                        <button class="btn btn-outline btn-outline-dark" onclick="modalProducto.open()"
+                            id="btn-create-producto">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect width="20" height="16" x="2" y="4" rx="2" />
-                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                class="icon-sm">
+                                <path d="m7.5 4.27 9 5.15" />
+                                <path
+                                    d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                                <path d="m3.3 7 8.7 5 8.7-5" />
+                                <path d="M12 22V12" />
                             </svg>
-                            Con Email
+                            Crear Producto DB
+                        </button>
+                        <button class="btn btn-primary" onclick="agregarLineaWysiwyg()" id="btn-add-linea">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                class="icon-sm">
+                                <path d="M5 12h14" />
+                                <path d="M12 5v14" />
+                            </svg>
+                            Añadir Producto
+                            <button class="btn btn-primary mr-10" id="btn-modal-correo" onclick="modalCorreo.open()">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="icon-sm">
+                                    <path
+                                        d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                                    </path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                                Enviar Correo
+                            </button>
+                            <button class="btn btn-success" id="btn-guardar-cotizacion" onclick="guardarCotizacion()">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="icon-sm">
+                                    <path
+                                        d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
+                                    <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
+                                    <path d="M7 3v4a1 1 0 0 0 1 1h7" />
+                                </svg>
+                                Guardar y PDF
+                            </button>
+                    </div>
+
+                    <!-- WYSIWYG Editor Container -->
+                    <div id="wysiwyg-container" class="print-content">
+                        <div class="doc-header">
+                            <div class="doc-header-logo">
+                                <img src="logo.jpg" alt="Logo Tornometal" class="doc-logo">
+                                <div class="doc-company">
+                                    <h1 contenteditable="true" spellcheck="false" class="doc-company-title">TORNOMETAL
+                                        S.P.A</h1>
+                                    <p contenteditable="true" spellcheck="false" class="doc-company-subtitle">RUT:
+                                        77.049.848-1 | Giro: METALMECÁNICA</p>
+                                    <p contenteditable="true" spellcheck="false" class="doc-company-subtitle">Río Calle
+                                        Calle 1764, Comuna Conchalí</p>
+                                    <p contenteditable="true" spellcheck="false" class="doc-company-subtitle mb-0">Fono:
+                                        +56977907873</p>
+                                </div>
+                            </div>
+                            <div class="doc-meta">
+                                <h2 class="doc-title">COTIZACIÓN</h2>
+                                <p>N° <span id="doc-id" contenteditable="true" spellcheck="false">COT-0000</span></p>
+                                <p>Fecha: <span id="doc-fecha" contenteditable="true"
+                                        spellcheck="false">DD/MM/AAAA</span>
+                                </p>
+                                <p contenteditable="true" spellcheck="false">Vigencia: 8 días</p>
+                            </div>
                         </div>
+
+                        <hr class="doc-divider">
+
+                        <div class="doc-info">
+                            <div class="doc-client">
+                                <h4>COTIZADO PARA</h4>
+                                <!-- Select interactivo dentro del doc -->
+                                <select id="select-cliente" class="wysiwyg-select print-hide mb-10"
+                                    aria-label="Seleccionar Cliente" onchange="actualizarClienteDocs()">
+                                    <option value="" disabled selected>Seleccione un cliente de la Base de Datos...
+                                    </option>
+                                </select>
+                                <h3 id="doc-client-name" contenteditable="true" spellcheck="false">[Nombre de Empresa o
+                                    Cliente]</h3>
+                                <p id="doc-client-contacto" contenteditable="true" spellcheck="false">Atención a:
+                                    [Nombre
+                                    del Contacto]</p>
+                                <p id="doc-client-rut" contenteditable="true" spellcheck="false">RUT: [RUT del cliente]
+                                </p>
+                                <p id="doc-client-email" contenteditable="true" spellcheck="false">Email: [correo del
+                                    cliente]</p>
+                                <p id="doc-client-direccion" contenteditable="true" spellcheck="false">Dirección:
+                                    [Dirección
+                                    del Cliente]</p>
+                                <p id="doc-client-comuna-ciudad" contenteditable="true" spellcheck="false">
+                                    Comuna/Ciudad: [Comuna, Ciudad]</p>
+                                <p id="doc-client-giro" contenteditable="true" spellcheck="false">Giro: [Giro de la
+                                    empresa]</p>
+                            </div>
+                            <div class="doc-terms doc-terms-box" contenteditable="true" spellcheck="false">
+                                <h4 class="doc-terms-title">CONDICIONES DE VENTA Y PAGO</h4>
+                                <p class="doc-terms-text">Forma de pago: 30 días fecha de factura</p>
+                                <p class="doc-terms-text mb-0">Entrega: 7 días emitida orden de compra</p>
+                            </div>
+                        </div>
+
+                        <table class="doc-table">
+                            <thead>
+                                <tr>
+                                    <th class="w-75 text-left">CÓDIGO</th>
+                                    <th class="text-left">DESCRIPCION</th>
+                                    <th class="w-45 text-center">CANT.</th>
+                                    <th class="w-80 text-right">P. UNIT.</th>
+                                    <th class="w-80 text-right">IMPORTE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-cotizacion">
+                                <!-- Filas dinámicas editables -->
+                            </tbody>
+                        </table>
+
+                        <div class="doc-totals-wrapper">
+                            <table class="doc-totals">
+                                <tr>
+                                    <td>Subtotal</td>
+                                    <td id="total-neto">$0</td>
+                                </tr>
+                                <tr>
+                                    <td>IVA (19%)</td>
+                                    <td id="total-iva">$0</td>
+                                </tr>
+                                <tr class="doc-total-row">
+                                    <td>TOTAL</td>
+                                    <td id="total-final">$0</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <hr class="doc-divider mt-30">
+
+                        <div class="doc-notes" contenteditable="true" spellcheck="false">
+                            <h4>NOTAS Y TÉRMINOS</h4>
+                            <p>Esta cotización tiene una vigencia de 8 días naturales a partir de la fecha de emisión.
+                                Los
+                                precios incluyen únicamente los conceptos descritos. Cualquier trabajo adicional se
+                                cotizará
+                                por separado.</p>
+                            <p>[Agrega aquí tus garantías, alcances no incluidos o condiciones especiales.]</p>
+                        </div>
+
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="action-bar">
-                        <div class="card-title mb-0">
-                            <span class="icon">
+                <!-- ═══════════════════════════════════════
+             SECTION: CLIENTES
+             ═══════════════════════════════════════ -->
+                <div class="section" id="section-clientes" role="tabpanel" aria-labelledby="tab-clientes"
+                    aria-hidden="true">
+
+                    <div class="page-header">
+                        <h2>Gestión de Clientes</h2>
+                        <p>Administra tu cartera de clientes</p>
+                    </div>
+
+                    <div class="stats-row" id="clientes-stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-total-clientes">0</div>
+                            <div class="stat-label">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round">
@@ -334,367 +306,461 @@
                                     <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
                                     <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                                 </svg>
-                            </span>
-                            Listado de Clientes
-                            <span class="badge badge-info" id="badge-clientes">0</span>
+                                Total Clientes
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-empresas">0</div>
+                            <div class="stat-label">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect width="16" height="20" x="4" y="2" rx="2" ry="2" />
+                                    <path d="M9 22v-4h6v4" />
+                                    <path d="M8 6h.01" />
+                                    <path d="M16 6h.01" />
+                                    <path d="M12 6h.01" />
+                                    <path d="M12 10h.01" />
+                                    <path d="M12 14h.01" />
+                                    <path d="M16 10h.01" />
+                                    <path d="M16 14h.01" />
+                                    <path d="M8 10h.01" />
+                                    <path d="M8 14h.01" />
+                                </svg>
+                                Empresas
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-con-email">0</div>
+                            <div class="stat-label">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect width="20" height="16" x="2" y="4" rx="2" />
+                                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                                </svg>
+                                Con Email
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="action-bar">
+                            <div class="card-title mb-0">
+                                <span class="icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                        <circle cx="9" cy="7" r="4" />
+                                        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                    </svg>
+                                </span>
+                                Listado de Clientes
+                                <span class="badge badge-info" id="badge-clientes">0</span>
+                            </div>
+
+                            <!-- Search input -->
+                            <div class="search-wrapper">
+                                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <path d="m21 21-4.3-4.3" />
+                                </svg>
+                                <input type="text" class="form-control" id="search-clientes"
+                                    placeholder="Buscar clientes..."
+                                    aria-label="Buscar clientes por nombre, RUT, email o empresa"
+                                    oninput="onSearchClientes(event)" />
+                            </div>
+
+                            <button class="btn btn-primary" onclick="modalCliente.open()" id="btn-nuevo-cliente">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="icon-sm">
+                                    <path d="M5 12h14" />
+                                    <path d="M12 5v14" />
+                                </svg>
+                                Nuevo Cliente
+                            </button>
                         </div>
 
-                        <!-- Search input -->
-                        <div class="search-wrapper">
-                            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="11" cy="11" r="8" />
-                                <path d="m21 21-4.3-4.3" />
-                            </svg>
-                            <input type="text" class="form-control" id="search-clientes"
-                                placeholder="Buscar clientes..."
-                                aria-label="Buscar clientes por nombre, RUT, email o empresa"
-                                oninput="onSearchClientes(event)" />
+                        <div class="table-wrapper">
+                            <table aria-label="Listado de clientes registrados">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Nombre</th>
+                                        <th scope="col">RUT</th>
+                                        <th scope="col">Email</th>
+                                        <th scope="col">Empresa</th>
+                                        <th scope="col">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-clientes">
+                                    <tr>
+                                        <td colspan="6">
+                                            <div class="empty-state">
+                                                <div class="empty-icon">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                        fill="none" stroke="currentColor" stroke-width="2"
+                                                        stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                                        <circle cx="9" cy="7" r="4" />
+                                                        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                                    </svg>
+                                                </div>
+                                                <p>No hay clientes registrados</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
+                </div>
 
-                        <button class="btn btn-primary" onclick="modalCliente.open()" id="btn-nuevo-cliente">
+                <!-- ═══════════════════════════════════════
+             SECTION: HISTORIAL
+             ═══════════════════════════════════════ -->
+                <div class="section" id="section-historial" role="tabpanel" aria-labelledby="tab-historial"
+                    aria-hidden="true">
+                    <div class="page-header"
+                        style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <h2>Historial de Cotizaciones</h2>
+                            <p>Revisa las últimas cotizaciones guardadas en el sistema</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="nuevaCotizacionEnBlanco()">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                 class="icon-sm">
-                                <path d="M5 12h14" />
-                                <path d="M12 5v14" />
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
-                            Nuevo Cliente
+                            Nueva Cotización
                         </button>
                     </div>
-
-                    <div class="table-wrapper">
-                        <table aria-label="Listado de clientes registrados">
-                            <thead>
-                                <tr>
-                                    <th scope="col">ID</th>
-                                    <th scope="col">Nombre</th>
-                                    <th scope="col">RUT</th>
-                                    <th scope="col">Email</th>
-                                    <th scope="col">Empresa</th>
-                                    <th scope="col">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-clientes">
-                                <tr>
-                                    <td colspan="6">
-                                        <div class="empty-state">
-                                            <div class="empty-icon">
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                    stroke-linejoin="round">
-                                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                                                    <circle cx="9" cy="7" r="4" />
-                                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                                                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                                                </svg>
-                                            </div>
-                                            <p>No hay clientes registrados</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="card">
+                        <div class="table-wrapper">
+                            <table aria-label="Historial de Cotizaciones">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Número</th>
+                                        <th scope="col">Fecha</th>
+                                        <th scope="col">Cliente / Empresa</th>
+                                        <th scope="col">Total</th>
+                                        <th scope="col">Estado</th>
+                                        <th scope="col" class="w-80">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-historial">
+                                    <!-- Filas dinámicas -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- ═══════════════════════════════════════
-             SECTION: HISTORIAL
-             ═══════════════════════════════════════ -->
-            <div class="section" id="section-historial" role="tabpanel" aria-labelledby="tab-historial" aria-hidden="true">
-                <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <div>
-                        <h2>Historial de Cotizaciones</h2>
-                        <p>Revisa las últimas cotizaciones guardadas en el sistema</p>
-                    </div>
-                    <button class="btn btn-primary" onclick="nuevaCotizacionEnBlanco()">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                        Nueva Cotización
-                    </button>
-                </div>
-                <div class="card">
-                    <div class="table-wrapper">
-                        <table aria-label="Historial de Cotizaciones">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Número</th>
-                                    <th scope="col">Fecha</th>
-                                    <th scope="col">Cliente / Empresa</th>
-                                    <th scope="col">Total</th>
-                                    <th scope="col">Estado</th>
-                                    <th scope="col" class="w-80">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-historial">
-                                <!-- Filas dinámicas -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- ═══════════ MODAL: NUEVO CLIENTE ═══════════ -->
-    <div class="modal-overlay" id="modal-cliente" role="dialog" aria-modal="true" aria-labelledby="modal-cliente-title"
-        aria-hidden="true">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 id="modal-cliente-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                    </svg>
-                    Nuevo Cliente
-                </h3>
-                <button class="modal-close" onclick="modalCliente.close()" aria-label="Cerrar modal">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 6 6 18" />
-                        <path d="m6 6 12 12" />
-                    </svg>
-                </button>
-            </div>
-            <form id="form-cliente" onsubmit="guardarCliente(event)" novalidate>
-                <input type="hidden" id="cl-id" value="">
-                <div class="form-row form-row-2">
-                    <div class="form-group">
-                        <label class="form-label" for="cl-nombre">Nombre *</label>
-                        <input type="text" class="form-control" id="cl-nombre" placeholder="Ej: Juan Pérez" required
-                            autocomplete="name" aria-required="true" />
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="cl-rut">RUT *</label>
-                        <input type="text" class="form-control" id="cl-rut" placeholder="Ej: 12.345.678-9" required
-                            aria-required="true" />
-                    </div>
-                </div>
-                <div class="form-row form-row-2">
-                    <div class="form-group">
-                        <label class="form-label" for="cl-email">Email</label>
-                        <input type="email" class="form-control" id="cl-email" placeholder="correo@ejemplo.cl"
-                            autocomplete="email" />
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="cl-empresa">Empresa</label>
-                        <input type="text" class="form-control" id="cl-empresa" placeholder="Nombre de la empresa"
-                            autocomplete="organization" />
-                    </div>
-                </div>
-                <div class="form-row form-row-2">
-                    <div class="form-group">
-                        <label class="form-label" for="cl-contacto">Atención a (Contacto)</label>
-                        <input type="text" class="form-control" id="cl-contacto" placeholder="Ej: Pedro Ruiz" />
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="cl-direccion">Dirección</label>
-                        <input type="text" class="form-control" id="cl-direccion"
-                            placeholder="Ej: Calle Principal 123" />
-                    </div>
-                </div>
-                <div class="form-row form-row-2">
-                    <div class="form-group">
-                        <label class="form-label" for="cl-comuna">Comuna</label>
-                        <input type="text" class="form-control" id="cl-comuna" placeholder="Ej: Santiago Centro" />
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="cl-ciudad">Ciudad</label>
-                        <input type="text" class="form-control" id="cl-ciudad" placeholder="Ej: Santiago" />
-                    </div>
-                </div>
-                <div class="form-group mb-20">
-                    <label class="form-label" for="cl-giro">Giro de la Empresa</label>
-                    <input type="text" class="form-control" id="cl-giro" placeholder="Ej: Metalmecánica, Servicios, etc." />
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-ghost" onclick="modalCliente.close()">Cancelar</button>
-                    <button type="submit" class="btn btn-success" id="btn-submit-cliente">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="icon-sm">
-                            <path
-                                d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
-                            <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
-                            <path d="M7 3v4a1 1 0 0 0 1 1h7" />
-                        </svg>
-                        Guardar Cliente
-                    </button>
-                </div>
-            </form>
+            </main>
         </div>
-    </div>
 
-        <!-- ═══════════ MODAL: ENVIAR CORREO ═══════════ -->
-    <div class="modal-overlay" id="modal-correo" role="dialog" aria-modal="true" aria-hidden="true">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 id="modal-correo-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-lg"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                    Enviar Cotización por Correo
-                </h3>
-                <button class="btn-close" onclick="modalCorreo.close()" aria-label="Cerrar modal">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-md"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="form-correo" onsubmit="enviarCorreoCotizacion(event)">
-                    <div class="form-group">
-                        <label for="correo-destinatario">Destinatario</label>
-                        <input type="email" id="correo-destinatario" required placeholder="correo@cliente.com">
+        <!-- ═══════════ MODAL: NUEVO CLIENTE ═══════════ -->
+        <div class="modal-overlay" id="modal-cliente" role="dialog" aria-modal="true"
+            aria-labelledby="modal-cliente-title" aria-hidden="true">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 id="modal-cliente-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        Nuevo Cliente
+                    </h3>
+                    <button class="modal-close" onclick="modalCliente.close()" aria-label="Cerrar modal">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6 6 18" />
+                            <path d="m6 6 12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <form id="form-cliente" onsubmit="guardarCliente(event)" novalidate>
+                    <input type="hidden" id="cl-id" value="">
+                    <div class="form-row form-row-2">
+                        <div class="form-group">
+                            <label class="form-label" for="cl-nombre">Nombre *</label>
+                            <input type="text" class="form-control" id="cl-nombre" placeholder="Ej: Juan Pérez" required
+                                autocomplete="name" aria-required="true" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="cl-rut">RUT *</label>
+                            <input type="text" class="form-control" id="cl-rut" placeholder="Ej: 12.345.678-9" required
+                                aria-required="true" />
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="correo-asunto">Asunto</label>
-                        <input type="text" id="correo-asunto" required>
+                    <div class="form-row form-row-2">
+                        <div class="form-group">
+                            <label class="form-label" for="cl-email">Email</label>
+                            <input type="email" class="form-control" id="cl-email" placeholder="correo@ejemplo.cl"
+                                autocomplete="email" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="cl-empresa">Empresa</label>
+                            <input type="text" class="form-control" id="cl-empresa" placeholder="Nombre de la empresa"
+                                autocomplete="organization" />
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="correo-mensaje">Mensaje</label>
-                        <textarea id="correo-mensaje" rows="5" required class="resize-v"></textarea>
+                    <div class="form-row form-row-2">
+                        <div class="form-group">
+                            <label class="form-label" for="cl-contacto">Atención a (Contacto)</label>
+                            <input type="text" class="form-control" id="cl-contacto" placeholder="Ej: Pedro Ruiz" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="cl-direccion">Dirección</label>
+                            <input type="text" class="form-control" id="cl-direccion"
+                                placeholder="Ej: Calle Principal 123" />
+                        </div>
                     </div>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-align" style="width:14px;height:14px;"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-                        El PDF de la cotización se adjuntará automáticamente.
-                    </p>
+                    <div class="form-row form-row-2">
+                        <div class="form-group">
+                            <label class="form-label" for="cl-comuna">Comuna</label>
+                            <input type="text" class="form-control" id="cl-comuna" placeholder="Ej: Santiago Centro" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="cl-ciudad">Ciudad</label>
+                            <input type="text" class="form-control" id="cl-ciudad" placeholder="Ej: Santiago" />
+                        </div>
+                    </div>
+                    <div class="form-group mb-20">
+                        <label class="form-label" for="cl-giro">Giro de la Empresa</label>
+                        <input type="text" class="form-control" id="cl-giro"
+                            placeholder="Ej: Metalmecánica, Servicios, etc." />
+                    </div>
                     <div class="modal-actions">
-                        <button type="button" class="btn-secondary" onclick="modalCorreo.close()">Cancelar</button>
-                        <button type="submit" class="btn-primary" id="btn-enviar-correo">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                            Enviar Correo
+                        <button type="button" class="btn btn-ghost" onclick="modalCliente.close()">Cancelar</button>
+                        <button type="submit" class="btn btn-success" id="btn-submit-cliente">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                class="icon-sm">
+                                <path
+                                    d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
+                                <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
+                                <path d="M7 3v4a1 1 0 0 0 1 1h7" />
+                            </svg>
+                            Guardar Cliente
                         </button>
                     </div>
                 </form>
             </div>
         </div>
-    </div>
-    <!-- ═══════════ MODAL: NUEVO PRODUCTO ═══════════ -->
-    <div class="modal-overlay" id="modal-producto" role="dialog" aria-modal="true"
-        aria-labelledby="modal-producto-title" aria-hidden="true">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 id="modal-producto-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m7.5 4.27 9 5.15" />
-                        <path
-                            d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-                        <path d="m3.3 7 8.7 5 8.7-5" />
-                        <path d="M12 22V12" />
-                    </svg>
-                    Nuevo Producto
-                </h3>
-                <button class="modal-close" onclick="modalProducto.close()" aria-label="Cerrar modal">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 6 6 18" />
-                        <path d="m6 6 12 12" />
-                    </svg>
-                </button>
-            </div>
-            <form id="form-producto" onsubmit="guardarProducto(event)" novalidate>
-                <div class="form-row form-row-2">
-                    <div class="form-group">
-                        <label class="form-label" for="prod-codigo">Código SKU *</label>
-                        <input type="text" class="form-control" id="prod-codigo" placeholder="Ej: ITEM-100" required
-                            aria-required="true" />
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="prod-nombre">Descripción *</label>
-                        <input type="text" class="form-control" id="prod-nombre" placeholder="Nombre del producto"
-                            required aria-required="true" />
-                    </div>
-                </div>
-                <div class="form-row form-row-2">
-                    <div class="form-group">
-                        <label class="form-label" for="prod-precio">Precio Unitario *</label>
-                        <input type="number" class="form-control" id="prod-precio" placeholder="0" min="0" required />
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="prod-stock">Stock</label>
-                        <input type="number" class="form-control" id="prod-stock" placeholder="0" min="0" />
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-ghost" onclick="modalProducto.close()">Cancelar</button>
-                    <button type="submit" class="btn btn-success" id="btn-submit-producto">
+
+        <!-- ═══════════ MODAL: ENVIAR CORREO ═══════════ -->
+        <div class="modal-overlay" id="modal-correo" role="dialog" aria-modal="true" aria-hidden="true">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 id="modal-correo-title">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="icon-sm">
-                            <path
-                                d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
-                            <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
-                            <path d="M7 3v4a1 1 0 0 0 1 1h7" />
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-lg">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                            </path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
                         </svg>
-                        Guardar Producto
+                        Enviar Cotización por Correo
+                    </h3>
+                    <button class="btn-close" onclick="modalCorreo.close()" aria-label="Cerrar modal">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-md">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
                     </button>
                 </div>
-            </form>
+                <div class="modal-body">
+                    <form id="form-correo" onsubmit="enviarCorreoCotizacion(event)">
+                        <div class="form-group">
+                            <label for="correo-destinatario">Destinatario</label>
+                            <input type="email" id="correo-destinatario" required placeholder="correo@cliente.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="correo-asunto">Asunto</label>
+                            <input type="text" id="correo-asunto" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="correo-mensaje">Mensaje</label>
+                            <textarea id="correo-mensaje" rows="5" required class="resize-v"></textarea>
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                class="icon-align" style="width:14px;height:14px;">
+                                <path
+                                    d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48">
+                                </path>
+                            </svg>
+                            El PDF de la cotización se adjuntará automáticamente.
+                        </p>
+                        <div class="modal-actions">
+                            <button type="button" class="btn-secondary" onclick="modalCorreo.close()">Cancelar</button>
+                            <button type="submit" class="btn-primary" id="btn-enviar-correo">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="icon-sm">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                                Enviar Correo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-    </div>
-
-    <!-- ═══════════ MODAL: VER DETALLE COTIZACIÓN ═══════════ -->
-    <div class="modal-overlay" id="modal-detalle" role="dialog" aria-modal="true" aria-labelledby="modal-detalle-title" aria-hidden="true">
-        <div class="modal" style="max-width: 600px;">
-            <div class="modal-header">
-                <h3 class="modal-title" id="modal-detalle-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-lg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                    Detalle de Cotización
-                </h3>
-                <button type="button" class="btn-close" aria-label="Cerrar modal" onclick="modalDetalle.close()">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                </button>
-            </div>
-            <div class="modal-body" id="modal-detalle-content" style="max-height: 60vh; overflow-y: auto;">
-                <!-- Filled dynamically -->
-            </div>
-            <div class="modal-actions" style="border-top: 1px solid var(--border-subtle); padding-top: 15px; margin-top: 15px;">
-                <button type="button" class="btn btn-ghost" onclick="modalDetalle.close()">Cerrar</button>
-                <button type="button" class="btn btn-primary" id="btn-detalle-editar">
-                    Editar
-                </button>
-                <button type="button" class="btn btn-outline" id="btn-detalle-imprimir">
-                    Generar PDF
-                </button>
+        <!-- ═══════════ MODAL: NUEVO PRODUCTO ═══════════ -->
+        <div class="modal-overlay" id="modal-producto" role="dialog" aria-modal="true"
+            aria-labelledby="modal-producto-title" aria-hidden="true">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 id="modal-producto-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m7.5 4.27 9 5.15" />
+                            <path
+                                d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                            <path d="m3.3 7 8.7 5 8.7-5" />
+                            <path d="M12 22V12" />
+                        </svg>
+                        Nuevo Producto
+                    </h3>
+                    <button class="modal-close" onclick="modalProducto.close()" aria-label="Cerrar modal">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6 6 18" />
+                            <path d="m6 6 12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <form id="form-producto" onsubmit="guardarProducto(event)" novalidate>
+                    <div class="form-row form-row-2">
+                        <div class="form-group">
+                            <label class="form-label" for="prod-codigo">Código SKU *</label>
+                            <input type="text" class="form-control" id="prod-codigo" placeholder="Ej: ITEM-100" required
+                                aria-required="true" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="prod-nombre">Descripción *</label>
+                            <input type="text" class="form-control" id="prod-nombre" placeholder="Nombre del producto"
+                                required aria-required="true" />
+                        </div>
+                    </div>
+                    <div class="form-row form-row-2">
+                        <div class="form-group">
+                            <label class="form-label" for="prod-precio">Precio Unitario *</label>
+                            <input type="number" class="form-control" id="prod-precio" placeholder="0" min="0"
+                                required />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="prod-stock">Stock</label>
+                            <input type="number" class="form-control" id="prod-stock" placeholder="0" min="0" />
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-ghost" onclick="modalProducto.close()">Cancelar</button>
+                        <button type="submit" class="btn btn-success" id="btn-submit-producto">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                class="icon-sm">
+                                <path
+                                    d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
+                                <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
+                                <path d="M7 3v4a1 1 0 0 0 1 1h7" />
+                            </svg>
+                            Guardar Producto
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-    </div>
 
-    <!-- ═══════════ MODAL: CONFIRMACIÓN ═══════════ -->
-    <div class="modal-overlay" id="modal-confirm" role="alertdialog" aria-modal="true"
-        aria-labelledby="modal-confirm-title" aria-describedby="modal-confirm-desc" aria-hidden="true">
-        <div class="modal modal-confirm">
-            <div class="confirm-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 6h18" />
-                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                    <line x1="10" x2="10" y1="11" y2="17" />
-                    <line x1="14" x2="14" y1="11" y2="17" />
-                </svg>
+        <!-- ═══════════ MODAL: VER DETALLE COTIZACIÓN ═══════════ -->
+        <div class="modal-overlay" id="modal-detalle" role="dialog" aria-modal="true"
+            aria-labelledby="modal-detalle-title" aria-hidden="true">
+            <div class="modal" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modal-detalle-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-lg">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        Detalle de Cotización
+                    </h3>
+                    <button type="button" class="btn-close" aria-label="Cerrar modal" onclick="modalDetalle.close()">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6 6 18" />
+                            <path d="m6 6 12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-detalle-content" style="max-height: 60vh; overflow-y: auto;">
+                    <!-- Filled dynamically -->
+                </div>
+                <div class="modal-actions"
+                    style="border-top: 1px solid var(--border-subtle); padding-top: 15px; margin-top: 15px;">
+                    <button type="button" class="btn btn-ghost" onclick="modalDetalle.close()">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="btn-detalle-editar">
+                        Editar
+                    </button>
+                    <button type="button" class="btn btn-outline" id="btn-detalle-imprimir">
+                        Generar PDF
+                    </button>
+                </div>
             </div>
-            <h3 id="modal-confirm-title">Confirmar eliminación</h3>
-            <p id="modal-confirm-desc" class="confirm-message">¿Estás seguro de que deseas eliminar este elemento?</p>
-            <div class="modal-actions">
-                <button type="button" class="btn btn-ghost" onclick="modalConfirm.cancel()">Cancelar</button>
-                <button type="button" class="btn btn-danger" onclick="modalConfirm.confirm()">
+        </div>
+
+        <!-- ═══════════ MODAL: CONFIRMACIÓN ═══════════ -->
+        <div class="modal-overlay" id="modal-confirm" role="alertdialog" aria-modal="true"
+            aria-labelledby="modal-confirm-title" aria-describedby="modal-confirm-desc" aria-hidden="true">
+            <div class="modal modal-confirm">
+                <div class="confirm-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm">
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M3 6h18" />
                         <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
                         <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                        <line x1="10" x2="10" y1="11" y2="17" />
+                        <line x1="14" x2="14" y1="11" y2="17" />
                     </svg>
-                    Eliminar
-                </button>
+                </div>
+                <h3 id="modal-confirm-title">Confirmar eliminación</h3>
+                <p id="modal-confirm-desc" class="confirm-message">¿Estás seguro de que deseas eliminar este elemento?
+                </p>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-ghost" onclick="modalConfirm.cancel()">Cancelar</button>
+                    <button type="button" class="btn btn-danger" onclick="modalConfirm.confirm()">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm">
+                            <path d="M3 6h18" />
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                        </svg>
+                        Eliminar
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
 
 
 
-    <!-- ═══════════ JAVASCRIPT ═══════════ -->
-    <script src="app.js?v=14"></script>
+        <!-- ═══════════ JAVASCRIPT ═══════════ -->
+        <script src="app.js?v=14"></script>
 
-</body>
+    </body>
 
-</html>
+    </html>
