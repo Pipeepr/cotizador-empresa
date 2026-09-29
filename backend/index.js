@@ -219,11 +219,80 @@ app.post('/cotizaciones', requireAuth, async (req, res) => {
   }
 });
 
-// 6. OBTENER historial de cotizaciones
+// 6. ACTUALIZAR cotización existente (solo si está en Borrador)
+app.put('/cotizaciones/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const { cliente_id, subtotal, iva, total, detalles } = req.body;
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    // Check if it exists and is Borrador
+    const checkRes = await client.query('SELECT estado FROM cotizaciones WHERE id = $1', [id]);
+    if (checkRes.rows.length === 0) throw new Error('Cotización no encontrada');
+    if (checkRes.rows[0].estado !== 'Borrador') throw new Error('Solo se pueden editar cotizaciones en Borrador');
+
+    await client.query(
+      'UPDATE cotizaciones SET cliente_id = $1, subtotal = $2, iva = $3, total = $4, fecha = CURRENT_TIMESTAMP WHERE id = $5',
+      [cliente_id, subtotal, iva, total, id]
+    );
+
+    // Replace details
+    await client.query('DELETE FROM detalle_cotizaciones WHERE cotizacion_id = $1', [id]);
+    for (let item of detalles) {
+      await client.query(
+        'INSERT INTO detalle_cotizaciones (cotizacion_id, producto_sku, nombre, cantidad, precio_venta) VALUES ($1, $2, $3, $4, $5)',
+        [id, item.producto_sku || null, item.nombre, item.cantidad, item.precio_venta]
+      );
+    }
+
+    await client.query('COMMIT');
+    res.json({ mensaje: 'Cotización actualizada con éxito' });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error(err.message);
+    res.status(500).send(err.message || 'Error al actualizar cotización');
+  } finally {
+    client.release();
+  }
+});
+
+// 7. ACTUALIZAR estado de cotización
+app.put('/cotizaciones/:id/estado', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const { estado } = req.body;
+  const usuario = req.user?.username || 'Sistema';
+  
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const oldStateRes = await client.query('SELECT estado FROM cotizaciones WHERE id = $1', [id]);
+    if (oldStateRes.rows.length === 0) throw new Error('Cotización no encontrada');
+    const estado_anterior = oldStateRes.rows[0].estado;
+
+    await client.query('UPDATE cotizaciones SET estado = $1 WHERE id = $2', [estado, id]);
+    
+    await client.query(
+      'INSERT INTO historial_estados (cotizacion_id, estado_anterior, estado_nuevo, usuario) VALUES ($1, $2, $3, $4)',
+      [id, estado_anterior, estado, usuario]
+    );
+
+    await client.query('COMMIT');
+    res.json({ mensaje: 'Estado actualizado' });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    res.status(500).send('Error al actualizar estado');
+  } finally {
+    client.release();
+  }
+});
+
+// 8. OBTENER historial de cotizaciones
 app.get('/cotizaciones', requireAuth, async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT c.id, c.fecha, c.total, cl.nombre AS cliente_nombre, cl.empresa AS cliente_empresa
+      SELECT c.id, c.fecha, c.total, c.estado, cl.nombre AS cliente_nombre, cl.empresa AS cliente_empresa
       FROM cotizaciones c
       LEFT JOIN clientes cl ON c.cliente_id = cl.id
       ORDER BY c.fecha DESC
@@ -233,6 +302,34 @@ app.get('/cotizaciones', requireAuth, async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Error al obtener cotizaciones');
+  }
+});
+
+// 9. OBTENER una cotización específica con sus detalles
+app.get('/cotizaciones/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const cotRes = await pool.query(`
+      SELECT c.*, cl.nombre AS cliente_nombre, cl.rut AS cliente_rut, cl.email AS cliente_email, 
+             cl.empresa AS cliente_empresa, cl.contacto AS cliente_contacto, cl.direccion AS cliente_direccion
+      FROM cotizaciones c
+      LEFT JOIN clientes cl ON c.cliente_id = cl.id
+      WHERE c.id = $1
+    `, [id]);
+    
+    if (cotRes.rows.length === 0) return res.status(404).send('No encontrada');
+    
+    const detRes = await pool.query('SELECT * FROM detalle_cotizaciones WHERE cotizacion_id = $1', [id]);
+    const histRes = await pool.query('SELECT * FROM historial_estados WHERE cotizacion_id = $1 ORDER BY fecha DESC', [id]);
+    
+    res.json({ 
+      ...cotRes.rows[0], 
+      detalles: detRes.rows,
+      historial_estados: histRes.rows
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Error al obtener la cotización');
   }
 });
 
@@ -272,7 +369,8 @@ async function initDB() {
         fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         subtotal DECIMAL(10, 2) NOT NULL,
         iva DECIMAL(10, 2) NOT NULL,
-        total DECIMAL(10, 2) NOT NULL
+        total DECIMAL(10, 2) NOT NULL,
+        estado VARCHAR(50) DEFAULT 'Borrador'
       );
       CREATE TABLE IF NOT EXISTS detalle_cotizaciones (
         id SERIAL PRIMARY KEY,
@@ -283,6 +381,33 @@ async function initDB() {
         precio_venta DECIMAL(10, 2) NOT NULL
       );
       
+      CREATE TABLE IF NOT EXISTS notas_venta (
+        id SERIAL PRIMARY KEY,
+        cotizacion_id INTEGER REFERENCES cotizaciones(id),
+        numero VARCHAR(50) UNIQUE NOT NULL,
+        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        total DECIMAL(10, 2) NOT NULL,
+        pdf_url TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS historial_estados (
+        id SERIAL PRIMARY KEY,
+        cotizacion_id INTEGER REFERENCES cotizaciones(id),
+        estado_anterior VARCHAR(50),
+        estado_nuevo VARCHAR(50) NOT NULL,
+        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        usuario VARCHAR(100)
+      );
+
+      CREATE TABLE IF NOT EXISTS envios_correo (
+        id SERIAL PRIMARY KEY,
+        cotizacion_id INTEGER REFERENCES cotizaciones(id),
+        destinatario VARCHAR(255) NOT NULL,
+        asunto VARCHAR(255) NOT NULL,
+        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      
+      ALTER TABLE cotizaciones ADD COLUMN IF NOT EXISTS estado VARCHAR(50) DEFAULT 'Borrador';
       ALTER TABLE detalle_cotizaciones ADD COLUMN IF NOT EXISTS nombre VARCHAR(255);
       ALTER TABLE detalle_cotizaciones DROP CONSTRAINT IF EXISTS detalle_cotizaciones_producto_sku_fkey;
       ALTER TABLE clientes ADD COLUMN IF NOT EXISTS contacto VARCHAR(255);

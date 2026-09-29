@@ -1,3 +1,4 @@
+window.currentCotizacionId = null;
 /**
  * CotizaPro – Application Logic
  * ─────────────────────────────────────────────
