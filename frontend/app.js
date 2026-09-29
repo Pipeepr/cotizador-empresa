@@ -511,7 +511,7 @@ function agregarLineaWysiwyg(sku = null) {
             <input type="number" class="wysiwyg-input qty-input" value="1" min="1" onchange="recalcularTotalesWysiwyg()" onkeyup="recalcularTotalesWysiwyg()" style="text-align: center; width: 40px; font-size: 11px;">
         </td>
         <td style="text-align: right; width: 80px;">
-            <input type="number" class="wysiwyg-input price-input" value="${precio}" min="0" onchange="recalcularTotalesWysiwyg()" onkeyup="recalcularTotalesWysiwyg()" style="text-align: right; width: 70px; font-size: 11px;">
+            <input type="text" class="wysiwyg-input price-input" value="${formatCLP(precio)}" data-raw="${precio}" onfocus="this.value=this.dataset.raw||'0'" onblur="this.dataset.raw=parseInt(this.value.replace(/[^0-9]/g,'')||0);this.value=formatCLP(this.dataset.raw);recalcularTotalesWysiwyg()" onkeyup="this.dataset.raw=this.value;recalcularTotalesWysiwyg()" style="text-align: right; width: 70px; font-size: 11px;">
         </td>
         <td style="text-align: right; font-weight: bold; width: 80px; font-size: 11px;" class="row-total">
             ${formatCLP(precio)}
@@ -549,7 +549,7 @@ function recalcularTotalesWysiwyg() {
         if (!qtyInput || !priceInput) return;
         
         const qty = parseFloat(qtyInput.value) || 0;
-        const price = parseFloat(priceInput.value) || 0;
+        const price = parseFloat((priceInput.dataset.raw || priceInput.value).toString().replace(/[^0-9.-]/g, '')) || 0;
         const subtotal = qty * price;
         neto += subtotal;
         
@@ -594,7 +594,7 @@ async function guardarCotizacion() {
         const nombre = descInput.value || `Item ${index + 1}`;
         const sku_val = skuInput ? skuInput.value.trim() : '';
         const cantidad = parseFloat(qtyInput.value) || 1;
-        const precio_venta = parseFloat(priceInput.value) || 0;
+        const precio_venta = parseFloat((priceInput.dataset.raw || priceInput.value).toString().replace(/[^0-9.-]/g, '')) || 0;
         
         payloadLineas.push({
             producto_sku: sku_val || null,
