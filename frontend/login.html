@@ -12,59 +12,57 @@
     <div class="login-container">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         <h1>Acceso Seguro</h1>
-        <p>Inicia sesión en tu cuenta de CotizaPro</p>
+        <p>Inicia sesión con tu cuenta de Google</p>
 
         <div class="error-msg" id="error-msg"></div>
 
-        <form id="login-form">
-            <div class="form-group">
-                <label class="form-label" for="username">Usuario</label>
-                <input type="text" id="username" class="form-control" placeholder="Ej: admin" required autocomplete="username">
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="password">Contraseña</label>
-                <input type="password" id="password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
-            </div>
-            <button type="submit" class="btn" id="btn-submit">Ingresar</button>
-        </form>
+        <div id="google-btn" style="margin-top: 20px; display: flex; justify-content: center;"></div>
     </div>
 
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-submit');
+        function handleCredentialResponse(response) {
             const errorMsg = document.getElementById('error-msg');
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-
-            if (!username || !password) return;
-
-            btn.disabled = true;
-            btn.textContent = 'Verificando...';
             errorMsg.style.display = 'none';
 
-            try {
-                const res = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
+            // El token ID de google
+            const id_token = response.credential;
 
-                if (!res.ok) {
-                    const data = await res.json();
-                    throw new Error(data.error || 'Credenciales inválidas');
-                }
-
-                // Redirect to main app
+            fetch('/api/auth/google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: id_token })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Error al autenticar');
+                return res.json();
+            })
+            .then(data => {
                 window.location.href = '/';
-            } catch (err) {
-                errorMsg.textContent = err.message;
+            })
+            .catch(err => {
+                errorMsg.textContent = 'Hubo un error al iniciar sesión con Google';
                 errorMsg.style.display = 'block';
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Ingresar';
-            }
-        });
+            });
+        }
+
+        window.onload = function () {
+            // El mismo Client ID que usamos para enviar correos
+            const CLIENT_ID = '360557152471-b270feg6rv0nm39l04geqjkjlosbtv3n.apps.googleusercontent.com';
+
+            google.accounts.id.initialize({
+                client_id: CLIENT_ID,
+                callback: handleCredentialResponse
+            });
+
+            google.accounts.id.renderButton(
+                document.getElementById("google-btn"),
+                { theme: "outline", size: "large", width: "100%" }
+            );
+            
+            google.accounts.id.prompt(); // Muestra el One Tap dialog si está disponible
+        };
     </script>
 </body>
 </html>

@@ -7,7 +7,11 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const puppeteer = require('puppeteer');
+const { OAuth2Client } = require('google-auth-library');
 require('dotenv').config();
+
+const GOOGLE_CLIENT_ID = '360557152471-b270feg6rv0nm39l04geqjkjlosbtv3n.apps.googleusercontent.com';
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 const app = express();
 app.use(cors());
@@ -93,6 +97,46 @@ app.post('/api/login', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: 'Error del servidor' });
+    }
+});
+
+app.post('/api/auth/google', async (req, res) => {
+    const { token } = req.body;
+    try {
+        const ticket = await googleClient.verifyIdToken({
+            idToken: token,
+            audience: GOOGLE_CLIENT_ID
+        });
+        const payload = ticket.getPayload();
+        const email = payload.email;
+        const name = payload.name;
+
+        // Upsert user based on google email
+        let userRes = await pool.query('SELECT * FROM usuarios WHERE username = $1', [email]);
+        let user;
+        if (userRes.rows.length === 0) {
+            // Register new google user
+            const dummyPassword = await bcrypt.hash(Math.random().toString(36), 10);
+            const insertRes = await pool.query(
+                'INSERT INTO usuarios (username, password) VALUES ($1, $2) RETURNING *',
+                [email, dummyPassword]
+            );
+            user = insertRes.rows[0];
+        } else {
+            user = userRes.rows[0];
+        }
+
+        const jwtToken = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '12h' });
+        res.cookie('token', jwtToken, { 
+            httpOnly: true, 
+            secure: process.env.NODE_ENV === 'production', 
+            sameSite: 'strict',
+            maxAge: 12 * 60 * 60 * 1000 
+        });
+        res.json({ success: true, email });
+    } catch (err) {
+        console.error('Error verifying google token', err);
+        res.status(401).json({ error: 'Token de Google inválido' });
     }
 });
 
