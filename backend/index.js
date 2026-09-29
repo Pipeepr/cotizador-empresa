@@ -114,7 +114,8 @@ app.post('/api/auth/google', async (req, res) => {
         // --- LISTA DE CORREOS PERMITIDOS ---
         // Puedes agregar más correos separándolos con comas.
         const CORREOS_PERMITIDOS = [
-            'misteryfelipe@gmail.com'
+            'misteryfelipe@gmail.com',
+            'rpereira@tornometal.cl'
         ];
 
         if (!CORREOS_PERMITIDOS.includes(email)) {
