@@ -496,28 +496,45 @@ function agregarLineaWysiwyg(sku = null) {
     
     const tr = document.createElement('tr');
     tr.innerHTML = `
-        <td style="text-align: left;">
-            <div style="display:flex; align-items:center; gap: 8px;">
+        <td style="text-align: left; width: 45px;">
+            <div style="display:flex; align-items:center; gap: 3px;">
                 <button class="btn-remove print-hide" onclick="this.closest('tr').remove(); recalcularTotalesWysiwyg();" title="Eliminar" style="padding: 2px;">
                     ${Icons.x}
                 </button>
-                <input type="text" class="wysiwyg-input sku-input" placeholder="CÓDIGO" value="${escapeHtml(sku || '')}" style="width: 80px;">
+                <input type="text" class="wysiwyg-input sku-input" placeholder="CÓD" value="${escapeHtml(sku || '')}" style="width: 100%; font-size: 11px;">
             </div>
         </td>
         <td style="text-align: left;">
-            <input type="text" class="wysiwyg-input desc-input" placeholder="Descripción del producto..." value="${escapeHtml(nombre)}">
+            <textarea class="wysiwyg-input desc-input" placeholder="Descripción del producto..." rows="1">${escapeHtml(nombre)}</textarea>
         </td>
-        <td style="text-align: center;">
-            <input type="number" class="wysiwyg-input qty-input" value="1" min="1" onchange="recalcularTotalesWysiwyg()" onkeyup="recalcularTotalesWysiwyg()" style="text-align: center;">
+        <td style="text-align: center; width: 45px;">
+            <input type="number" class="wysiwyg-input qty-input" value="1" min="1" onchange="recalcularTotalesWysiwyg()" onkeyup="recalcularTotalesWysiwyg()" style="text-align: center; width: 40px; font-size: 11px;">
         </td>
-        <td style="text-align: right;">
-            <input type="number" class="wysiwyg-input price-input" value="${precio}" min="0" onchange="recalcularTotalesWysiwyg()" onkeyup="recalcularTotalesWysiwyg()" style="text-align: right;">
+        <td style="text-align: right; width: 80px;">
+            <input type="number" class="wysiwyg-input price-input" value="${precio}" min="0" onchange="recalcularTotalesWysiwyg()" onkeyup="recalcularTotalesWysiwyg()" style="text-align: right; width: 70px; font-size: 11px;">
         </td>
-        <td style="text-align: right; font-weight: bold;" class="row-total">
+        <td style="text-align: right; font-weight: bold; width: 80px; font-size: 11px;" class="row-total">
             ${formatCLP(precio)}
         </td>
     `;
     tbody.appendChild(tr);
+    // Auto-grow textarea on input and keydown
+    const textarea = tr.querySelector('textarea.desc-input');
+    if (textarea) {
+        const autoGrow = function(el) {
+            el.style.height = '22px';
+            el.style.height = el.scrollHeight + 'px';
+        };
+        textarea.addEventListener('input', function() { autoGrow(this); });
+        textarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                // Allow normal Enter for line breaks (don't prevent default)
+                setTimeout(() => autoGrow(this), 0);
+            }
+        });
+        // Initial auto-size
+        setTimeout(() => autoGrow(textarea), 10);
+    }
     recalcularTotalesWysiwyg();
 }
 
