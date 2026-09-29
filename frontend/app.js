@@ -1110,27 +1110,74 @@ const modalCorreo = {
     }
 };
 
+let googleTokenClient;
+
+function initGoogleAuth() {
+    if (typeof google === 'undefined') return;
+    googleTokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: 'TU_CLIENT_ID_DE_GOOGLE_AQUI',
+        scope: 'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email',
+        callback: (tokenResponse) => {
+            if (tokenResponse && tokenResponse.access_token) {
+                // Fetch email
+                fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                    headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+                })
+                .then(r => r.json())
+                .then(info => {
+                    procesarEnvioCorreoBackend(tokenResponse.access_token, info.email);
+                })
+                .catch(err => {
+                    console.error("Error fetching user email", err);
+                    showToast('Error obteniendo correo de Google', 'error');
+                });
+            }
+        },
+    });
+}
+
+// Llama a initGoogleAuth cuando se carga la página (o cuando la API de google está lista)
+window.addEventListener('load', () => {
+    if (typeof google !== 'undefined') {
+        initGoogleAuth();
+    } else {
+        setTimeout(initGoogleAuth, 1500); // Dar un poco de tiempo si carga lento
+    }
+});
+
 async function enviarCorreoCotizacion(e) {
     e.preventDefault();
     if (!window.currentCotizacionId) return;
 
-    const destinatario = document.getElementById('correo-destinatario').value;
-    const asunto = document.getElementById('correo-asunto').value;
-    const mensaje = document.getElementById('correo-mensaje').value;
+    if (!googleTokenClient) {
+        showToast('Google API no cargada o falta configurar el Client ID en app.js', 'error');
+        return;
+    }
 
-    // Guardar el mensaje modificado como el nuevo mensaje por defecto en localStorage
-    localStorage.setItem('correoMensajeDefault', mensaje);
+    // Almacena variables temporalmente
+    window.tempCorreoData = {
+        destinatario: document.getElementById('correo-destinatario').value,
+        asunto: document.getElementById('correo-asunto').value,
+        mensaje: document.getElementById('correo-mensaje').value,
+        html: `<!DOCTYPE html>\n${document.documentElement.outerHTML}`
+    };
 
-    showToast('Generando PDF y enviando correo, por favor espere...', 'info');
+    localStorage.setItem('correoMensajeDefault', window.tempCorreoData.mensaje);
 
-    // Clonar el documento para prepararlo para el envío
-    const htmlContent = `<!DOCTYPE html>\n${document.documentElement.outerHTML}`;
+    // Solicitar login y permisos a Google (Abre un popup)
+    googleTokenClient.requestAccessToken({ prompt: 'consent' });
+}
+
+async function procesarEnvioCorreoBackend(token, email) {
+    showToast('Generando PDF y enviando correo vía Google, por favor espere...', 'info');
+
+    const { destinatario, asunto, mensaje, html } = window.tempCorreoData;
 
     try {
         const res = await fetch(`${API}/cotizaciones/${window.currentCotizacionId}/enviar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ destinatario, asunto, mensaje, html: htmlContent })
+            body: JSON.stringify({ destinatario, asunto, mensaje, html, googleToken: token, googleEmail: email })
         });
 
         if (!res.ok) {
@@ -1138,13 +1185,12 @@ async function enviarCorreoCotizacion(e) {
             throw new Error(errText);
         }
 
-        showToast('Correo enviado exitosamente con el PDF adjunto', 'success');
+        showToast('Correo enviado exitosamente con tu cuenta de Google', 'success');
         cargarHistorial();
+        modalCorreo.close();
     } catch (err) {
         console.error("Error enviando correo", err);
-        showToast('Error al enviar el correo. Revisa la consola o configuración SMTP.', 'error');
+        showToast('Error al enviar el correo con Google.', 'error');
     }
-
-    modalCorreo.close();
 }
 

@@ -324,7 +324,7 @@ app.put('/cotizaciones/:id/estado', requireAuth, async (req, res) => {
 // 8. ENVIAR cotización por correo
 app.post('/cotizaciones/:id/enviar', requireAuth, async (req, res) => {
   const { id } = req.params;
-  const { destinatario, asunto, mensaje, html } = req.body;
+  const { destinatario, asunto, mensaje, html, googleToken, googleEmail } = req.body;
   const usuario = req.user?.username || 'Sistema';
 
   if (!destinatario || !asunto || !html) {
@@ -340,21 +340,31 @@ app.post('/cotizaciones/:id/enviar', requireAuth, async (req, res) => {
     await page.setContent(html, { waitUntil: 'networkidle0' });
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
     
-    // 2. Configurar Nodemailer (usar variables de entorno)
-    // Si no hay variables de entorno, usaremos un mock o devolveremos error,
-    // pero para probar asumimos que están configuradas en .env o usamos etherial (prueba)
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.ethereal.email',
-      port: process.env.SMTP_PORT || 587,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      }
-    });
+    // 2. Configurar Nodemailer
+    let transporter;
+    if (googleToken && googleEmail) {
+      transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          type: 'OAuth2',
+          user: googleEmail,
+          accessToken: googleToken
+        }
+      });
+    } else {
+      transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.ethereal.email',
+        port: process.env.SMTP_PORT || 587,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS
+        }
+      });
+    }
 
     // 3. Enviar correo
     const mailOptions = {
-      from: process.env.SMTP_FROM || '"Cotizador Empresa" <no-reply@cotizador.com>',
+      from: googleEmail || process.env.SMTP_FROM || '"Cotizador Empresa" <no-reply@cotizador.com>',
       to: destinatario,
       subject: asunto,
       text: mensaje || 'Adjunto enviamos la cotización.',
