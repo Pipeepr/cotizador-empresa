@@ -406,15 +406,19 @@ app.post('/cotizaciones/:id/enviar', requireAuth, async (req, res) => {
           accessToken: googleToken
         }
       });
-    } else {
+    } else if (process.env.SMTP_USER) {
+      // Solo si está configurado en el servidor explicitamente
       transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.ethereal.email',
-        port: process.env.SMTP_PORT || 587,
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: process.env.SMTP_PORT || 465,
+        secure: true,
         auth: {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS
         }
       });
+    } else {
+      throw new Error("No hay token de Google ni configuración SMTP en el servidor.");
     }
 
     // 3. Enviar correo
