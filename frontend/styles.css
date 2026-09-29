@@ -1332,8 +1332,11 @@ textarea.wysiwyg-input.desc-input:focus {
         margin: 0 !important;
         padding: 0 !important;
     }
-    .section:not(.active) {
+    .section {
         display: none !important;
+    }
+    #section-cotizacion {
+        display: block !important;
     }
     #wysiwyg-container {
         box-shadow: none !important;

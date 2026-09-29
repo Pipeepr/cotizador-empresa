@@ -770,9 +770,6 @@ async function cargarHistorial() {
                 <button class="btn btn-sm btn-ghost" onclick="abrirDetalleCotizacion(${c.id})" title="Editar en Cotizador">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
                 </button>
-                <button class="btn btn-sm btn-ghost" onclick="imprimirCotizacionDesdeHistorial(${c.id})" title="Generar PDF">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v8H6z"></path></svg>
-                </button>
                 <button class="btn btn-sm btn-ghost" onclick="confirmarBorrarCotizacion(${c.id})" title="Eliminar" style="color:var(--danger)">
                     ${Icons.trash}
                 </button>
@@ -952,35 +949,60 @@ async function verDetalleCotizacion(id) {
         if (!res.ok) throw new Error('Error fetching quote');
         const data = await res.json();
         
+        let subtotal = data.subtotal || 0;
+        let iva = data.iva || 0;
+        let total = data.total || 0;
+        
         let html = `
-            <div style="margin-bottom: 20px;">
-                <p><strong>N° Cotización:</strong> COT-${String(data.id).padStart(4, '0')}</p>
-                <p><strong>Fecha:</strong> ${new Date(data.fecha).toLocaleDateString()}</p>
-                <p><strong>Estado:</strong> <span class="badge-estado" style="display:inline-block">${data.estado || 'Borrador'}</span></p>
-                <p><strong>Cliente:</strong> ${escapeHtml(data.cliente_empresa || data.cliente_nombre || 'N/A')}</p>
-                <p><strong>Total:</strong> ${formatCLP(data.total)}</p>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                <div style="flex: 1; min-width: 200px; background: var(--bg-input); padding: 15px; border-radius: 8px;">
+                    <h4 style="margin-top: 0; color: var(--accent-end); font-size: 14px;">Datos de la Cotización</h4>
+                    <p style="margin: 5px 0;"><strong>N° Cotización:</strong> COT-${String(data.id).padStart(4, '0')}</p>
+                    <p style="margin: 5px 0;"><strong>Fecha:</strong> ${new Date(data.fecha).toLocaleDateString()}</p>
+                    <p style="margin: 5px 0;"><strong>Estado:</strong> <span class="badge-estado" style="display:inline-block">${data.estado || 'Borrador'}</span></p>
+                    <p style="margin: 5px 0;"><strong>Vigencia:</strong> 8 días</p>
+                </div>
+                <div style="flex: 1; min-width: 200px; background: var(--bg-input); padding: 15px; border-radius: 8px;">
+                    <h4 style="margin-top: 0; color: var(--accent-end); font-size: 14px;">Datos del Cliente</h4>
+                    <p style="margin: 5px 0;"><strong>Empresa:</strong> ${escapeHtml(data.cliente_empresa || data.cliente_nombre || 'N/A')}</p>
+                    <p style="margin: 5px 0;"><strong>RUT:</strong> ${escapeHtml(data.cliente_rut || 'No registra')}</p>
+                    <p style="margin: 5px 0;"><strong>Email:</strong> ${escapeHtml(data.cliente_email || 'No registra')}</p>
+                    <p style="margin: 5px 0;"><strong>Contacto:</strong> ${escapeHtml(data.cliente_contacto || 'No registra')}</p>
+                </div>
             </div>
-            <h4>Detalle de Productos</h4>
-            <table class="table" style="margin-top: 10px;">
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Cant.</th>
-                        <th>Precio Unit.</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${data.detalles.map(d => `
+            
+            <h4 style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; margin-bottom: 12px;">Detalle de Productos</h4>
+            <div style="max-height: 250px; overflow-y: auto;">
+                <table class="table" style="margin-top: 0; font-size: 13px;">
+                    <thead>
                         <tr>
-                            <td>${escapeHtml(d.nombre)}</td>
-                            <td>${d.cantidad}</td>
-                            <td>${formatCLP(d.precio_venta)}</td>
-                            <td>${formatCLP(d.cantidad * d.precio_venta)}</td>
+                            <th>Producto</th>
+                            <th style="text-align:center">Cant.</th>
+                            <th style="text-align:right">Precio Unit.</th>
+                            <th style="text-align:right">Subtotal</th>
                         </tr>
-                    `).join('')}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        ${data.detalles.map(d => `
+                            <tr>
+                                <td>${escapeHtml(d.nombre)}</td>
+                                <td style="text-align:center">${d.cantidad}</td>
+                                <td style="text-align:right">${formatCLP(d.precio_venta)}</td>
+                                <td style="text-align:right">${formatCLP(d.cantidad * d.precio_venta)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                <div style="background: var(--bg-card); padding: 15px; border-radius: 8px; border: 1px solid var(--border-subtle); min-width: 200px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;"><span>Neto:</span> <strong>${formatCLP(subtotal)}</strong></div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;"><span>IVA (19%):</span> <strong>${formatCLP(iva)}</strong></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 16px; color: var(--accent-end); margin-top: 10px; border-top: 1px solid var(--border-subtle); padding-top: 10px;">
+                        <span>Total:</span> <strong>${formatCLP(total)}</strong>
+                    </div>
+                </div>
+            </div>
         `;
         
         document.getElementById('modal-detalle-content').innerHTML = html;
