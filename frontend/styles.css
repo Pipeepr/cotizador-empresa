@@ -1318,13 +1318,25 @@ textarea.wysiwyg-input.desc-input:focus {
     @page {
         margin: 0; /* Elimina encabezados y pies de página automáticos del navegador */
     }
-    body {
+    html, body {
         background: #ffffff !important;
         color: #000000 !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
-        margin: 0;
-        padding: 0;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+    }
+    body::before {
+        display: none !important;
+    }
+    .app-layout, .main-content {
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+        display: block !important;
     }
     .sidebar, .page-header, .action-bar, .toast-container, .mobile-toggle, .print-hide {
         display: none !important;
@@ -1338,6 +1350,8 @@ textarea.wysiwyg-input.desc-input:focus {
     }
     #section-cotizacion {
         display: block !important;
+        height: auto !important;
+        overflow: visible !important;
     }
     #wysiwyg-container {
         background: #ffffff !important;
@@ -1345,10 +1359,13 @@ textarea.wysiwyg-input.desc-input:focus {
         box-shadow: none !important;
         border: none !important;
         margin: 0 auto !important;
-        padding: 25mm 20mm !important; /* El margen ahora está dentro del contenedor para no invocar el encabezado web */
+        padding: 0 !important; /* Quitar padding gigante en print para evitar hojas en blanco */
         max-width: 100% !important;
         width: 100% !important;
         box-sizing: border-box !important;
+        position: absolute;
+        top: 0;
+        left: 0;
     }
     
     /* Override dark colors to black for print */

@@ -873,6 +873,25 @@ async function imprimirCotizacionDesdeHistorial(id) {
     }, 500);
 }
 
+// ═══════════ NUEVA COTIZACIÓN ═══════════
+function nuevaCotizacionEnBlanco() {
+    window.currentCotizacionId = null;
+    document.getElementById('tabla-cotizacion').innerHTML = '';
+    document.getElementById('doc-id').textContent = `COT-0000`;
+    
+    const d = new Date();
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    document.getElementById('doc-fecha').textContent = `${dd}/${mm}/${d.getFullYear()}`;
+    
+    document.getElementById('select-cliente').value = '';
+    actualizarClienteDocs();
+    recalcularTotalesWysiwyg();
+    
+    switchSection('cotizacion');
+    showToast('Nueva cotización en blanco', 'success');
+}
+
 // ═══════════ ABRIR DETALLE / EDITAR COTIZACIÓN ═══════════
 async function abrirDetalleCotizacion(id, showEditor = true) {
     try {

@@ -403,9 +403,15 @@
              SECTION: HISTORIAL
              ═══════════════════════════════════════ -->
             <div class="section" id="section-historial" role="tabpanel" aria-labelledby="tab-historial" aria-hidden="true">
-                <div class="page-header">
-                    <h2>Historial de Cotizaciones</h2>
-                    <p>Revisa las últimas cotizaciones guardadas en el sistema</p>
+                <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h2>Historial de Cotizaciones</h2>
+                        <p>Revisa las últimas cotizaciones guardadas en el sistema</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="nuevaCotizacionEnBlanco()">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Nueva Cotización
+                    </button>
                 </div>
                 <div class="card">
                     <div class="table-wrapper">
