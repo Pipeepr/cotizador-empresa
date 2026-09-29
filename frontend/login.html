@@ -8,15 +8,33 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="login-page">
+    <div class="login-split">
+        <!-- Left Side (White/Clean) -->
+        <div class="login-left">
+            <div class="login-container">
+                <div class="login-logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    <span>TORNOMETAL</span>
+                </div>
+                
+                <h1>Bienvenido de vuelta</h1>
+                <p>Inicia sesión de forma segura usando tu cuenta de Google autorizada.</p>
 
-    <div class="login-container">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        <h1>Acceso Seguro</h1>
-        <p>Inicia sesión con tu cuenta de Google</p>
+                <div class="error-msg" id="error-msg"></div>
 
-        <div class="error-msg" id="error-msg"></div>
-
-        <div id="google-btn" style="margin-top: 20px; display: flex; justify-content: center;"></div>
+                <div class="google-btn-wrapper">
+                    <div id="google-btn"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Side (Vibrant Gradient/Image) -->
+        <div class="login-right">
+            <div class="login-right-content">
+                <h2>CotizaPro</h2>
+                <p>Sistema profesional de cotizaciones empresariales.</p>
+            </div>
+        </div>
     </div>
 
     <!-- Google Identity Services -->
