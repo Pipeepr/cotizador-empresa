@@ -709,7 +709,7 @@ async function cargarHistorial() {
     const tbody = document.getElementById('tabla-historial');
     if (!tbody) return;
     
-    tbody.innerHTML = renderSkeletonRows(4, 4);
+    tbody.innerHTML = renderSkeletonRows(5, 5); // Aumentado a 5 columnas
 
     try {
         const res = await fetch(`${API}/cotizaciones`);
@@ -718,24 +718,90 @@ async function cargarHistorial() {
         const data = await res.json();
         
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><p>No hay cotizaciones registradas</p></div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><p>No hay cotizaciones registradas</p></div></td></tr>';
             return;
         }
 
         tbody.innerHTML = data.map(c => {
             const dateStr = new Date(c.fecha).toLocaleDateString();
             const clientName = escapeHtml(c.cliente_empresa || c.cliente_nombre || 'N/A');
+            
+            // Render de Badge
+            let badgeClass = 'badge-borrador';
+            if (c.estado === 'Enviada') badgeClass = 'badge-enviada';
+            if (c.estado === 'Aprobada') badgeClass = 'badge-aprobada';
+            if (c.estado === 'Nota de Venta') badgeClass = 'badge-nota';
+            if (c.estado === 'Facturada') badgeClass = 'badge-facturada';
+            if (c.estado === 'Completada') badgeClass = 'badge-completada';
+            if (c.estado === 'Rechazada' || c.estado === 'Cancelada') badgeClass = 'badge-cancelada';
+
+            const btnText = c.estado === 'Borrador' ? 'Editar' : 'Ver Detalle';
+
             return `
                 <tr>
                     <td><strong>COT-${String(c.id).padStart(4, '0')}</strong></td>
                     <td>${dateStr}</td>
                     <td>${clientName}</td>
                     <td>${formatCLP(c.total)}</td>
+                    <td><span class="badge-estado ${badgeClass}">${c.estado || 'Borrador'}</span></td>
+                    <td>
+                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="abrirDetalleCotizacion(${c.id}, '${c.estado}')">
+                            ${btnText}
+                        </button>
+                    </td>
                 </tr>
             `;
         }).join('');
     } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><p style="color:var(--danger)">Error al cargar historial</p></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><p style="color:var(--danger)">Error al cargar historial</p></div></td></tr>';
+    }
+}
+
+async function abrirDetalleCotizacion(id, estado) {
+    if (estado === 'Borrador') {
+        // Cargar en el editor WYSIWYG
+        try {
+            const res = await fetch(`${API}/cotizaciones/${id}`);
+            if (!res.ok) throw new Error('Error fetching quote');
+            const data = await res.json();
+            
+            // 1. Limpiar editor
+            document.getElementById('tabla-cotizacion').innerHTML = '';
+            
+            // 2. Set ID global
+            window.currentCotizacionId = id;
+            document.getElementById('doc-id').textContent = `COT-${String(id).padStart(4, '0')}`;
+            
+            // 3. Setear cliente
+            const selectCliente = document.getElementById('select-cliente');
+            if(selectCliente.querySelector(`option[value="${data.cliente_id}"]`)) {
+                selectCliente.value = data.cliente_id;
+                actualizarDatosClienteDocumento();
+            }
+            
+            // 4. Agregar lineas
+            data.detalles.forEach(d => {
+                agregarLineaWysiwyg(d.producto_sku, d.nombre, d.precio_venta);
+                // Necesitamos settear la cantidad después de crear la fila, la fila es la última agregada
+                const rows = document.getElementById('tabla-cotizacion').querySelectorAll('tr');
+                const lastRow = rows[rows.length - 1];
+                if (lastRow) {
+                    const qtyInput = lastRow.querySelector('.qty-input');
+                    if (qtyInput) qtyInput.value = d.cantidad;
+                }
+            });
+            recalcularTotalesWysiwyg();
+            
+            // Cambiar vista al editor
+            switchSection('cotizador');
+            showToast(`Cotización #${id} cargada para edición`, 'success');
+        } catch (err) {
+            console.error(err);
+            showToast('Error al cargar la cotización', 'error');
+        }
+    } else {
+        // Por ahora solo mostraremos un Toast
+        showToast('Vista de detalle en construcción...', 'info');
     }
 }
 
