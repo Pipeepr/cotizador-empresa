@@ -370,7 +370,57 @@ app.post('/cotizaciones/:id/enviar', requireAuth, async (req, res) => {
   }
 });
 
-// 9. OBTENER historial de cotizaciones
+// 9. GENERAR Nota de Venta
+app.post('/cotizaciones/:id/nota-venta', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const usuario = req.user?.username || 'Sistema';
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    // Obtener cotización
+    const cotRes = await client.query('SELECT total, estado FROM cotizaciones WHERE id = $1', [id]);
+    if (cotRes.rows.length === 0) throw new Error('Cotización no encontrada');
+    
+    const { total, estado } = cotRes.rows[0];
+    
+    if (estado === 'Nota de Venta' || estado === 'Facturada' || estado === 'Completada') {
+      throw new Error('La cotización ya tiene una nota de venta generada');
+    }
+
+    // Generar numero correlativo NV-XXXX
+    const countRes = await client.query('SELECT COUNT(*) FROM notas_venta');
+    const nextNum = parseInt(countRes.rows[0].count, 10) + 1;
+    const numero = `NV-${String(nextNum).padStart(4, '0')}`;
+
+    // Crear la nota de venta
+    await client.query(
+      'INSERT INTO notas_venta (cotizacion_id, numero, total) VALUES ($1, $2, $3)',
+      [id, numero, total]
+    );
+
+    // Actualizar estado de la cotización
+    await client.query("UPDATE cotizaciones SET estado = 'Nota de Venta' WHERE id = $1", [id]);
+
+    // Registrar historial
+    await client.query(
+      'INSERT INTO historial_estados (cotizacion_id, estado_anterior, estado_nuevo, usuario) VALUES ($1, $2, $3, $4)',
+      [id, estado, 'Nota de Venta', usuario]
+    );
+
+    await client.query('COMMIT');
+    res.json({ mensaje: 'Nota de Venta generada exitosamente', numero });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error(err);
+    res.status(500).send(err.message || 'Error al generar Nota de Venta');
+  } finally {
+    client.release();
+  }
+});
+
+// 10. OBTENER historial de cotizaciones
 app.get('/cotizaciones', requireAuth, async (req, res) => {
   try {
     const result = await pool.query(`
@@ -387,15 +437,17 @@ app.get('/cotizaciones', requireAuth, async (req, res) => {
   }
 });
 
-// 9. OBTENER una cotización específica con sus detalles
+// 11. OBTENER una cotización específica con sus detalles
 app.get('/cotizaciones/:id', requireAuth, async (req, res) => {
   const { id } = req.params;
   try {
     const cotRes = await pool.query(`
       SELECT c.*, cl.nombre AS cliente_nombre, cl.rut AS cliente_rut, cl.email AS cliente_email, 
-             cl.empresa AS cliente_empresa, cl.contacto AS cliente_contacto, cl.direccion AS cliente_direccion
+             cl.empresa AS cliente_empresa, cl.contacto AS cliente_contacto, cl.direccion AS cliente_direccion,
+             nv.numero AS nota_venta_numero
       FROM cotizaciones c
       LEFT JOIN clientes cl ON c.cliente_id = cl.id
+      LEFT JOIN notas_venta nv ON nv.cotizacion_id = c.id
       WHERE c.id = $1
     `, [id]);
     

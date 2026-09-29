@@ -839,7 +839,7 @@ const modalCorreo = {
     overlay: document.getElementById('modal-correo'),
     open: function() {
         if (!window.currentCotizacionId) {
-            showToast('Debe guardar la cotización primero', 'error');
+            showToast('Debe guardar la cotizaciï¿½n primero', 'error');
             return;
         }
         // Pre-fill email si se ha seleccionado un cliente
@@ -851,8 +851,8 @@ const modalCorreo = {
             }
         }
         
-        document.getElementById('correo-asunto').value = Cotización N° COT- + String(window.currentCotizacionId).padStart(4, '0');
-        document.getElementById('correo-mensaje').value = Estimado/a,\n\nAdjunto enviamos la cotización solicitada.\n\nSaludos cordiales.;
+        document.getElementById('correo-asunto').value = Cotizaciï¿½n Nï¿½ COT- + String(window.currentCotizacionId).padStart(4, '0');
+        document.getElementById('correo-mensaje').value = Estimado/a,\n\nAdjunto enviamos la cotizaciï¿½n solicitada.\n\nSaludos cordiales.;
         
         this.overlay.style.display = 'flex';
         this.overlay.setAttribute('aria-hidden', 'false');
@@ -889,7 +889,7 @@ async function enviarCorreoCotizacion(e) {
         <html>
         <head>
             <meta charset="utf-8">
-            <title>Cotización</title>
+            <title>Cotizaciï¿½n</title>
             <style>
                 body { font-family: Arial, sans-serif; background: #fff !important; color: #000 !important; }
                 textarea { resize: none; border: none; overflow: hidden; font-family: Arial, sans-serif; }
