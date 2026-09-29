@@ -34,15 +34,16 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token: id_token })
             })
-            .then(res => {
-                if (!res.ok) throw new Error('Error al autenticar');
-                return res.json();
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Error al autenticar');
+                return data;
             })
             .then(data => {
                 window.location.href = '/';
             })
             .catch(err => {
-                errorMsg.textContent = 'Hubo un error al iniciar sesión con Google';
+                errorMsg.textContent = err.message || 'Hubo un error al iniciar sesión con Google';
                 errorMsg.style.display = 'block';
             });
         }

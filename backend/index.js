@@ -111,6 +111,16 @@ app.post('/api/auth/google', async (req, res) => {
         const email = payload.email;
         const name = payload.name;
 
+        // --- LISTA DE CORREOS PERMITIDOS ---
+        // Puedes agregar más correos separándolos con comas.
+        const CORREOS_PERMITIDOS = [
+            'misteryfelipe@gmail.com'
+        ];
+
+        if (!CORREOS_PERMITIDOS.includes(email)) {
+            return res.status(401).json({ error: 'Acceso denegado. Este correo no tiene autorización.' });
+        }
+
         // Upsert user based on google email
         let userRes = await pool.query('SELECT * FROM usuarios WHERE username = $1', [email]);
         let user;
