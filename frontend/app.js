@@ -1164,8 +1164,8 @@ async function enviarCorreoCotizacion(e) {
 
     localStorage.setItem('correoMensajeDefault', window.tempCorreoData.mensaje);
 
-    // Solicitar login y permisos a Google (Abre un popup)
-    googleTokenClient.requestAccessToken({ prompt: 'consent' });
+    // Solicitar login y permisos a Google (Abre popup solo la primera vez o renueva silenciosamente)
+    googleTokenClient.requestAccessToken();
 }
 
 async function procesarEnvioCorreoBackend(token, email) {
