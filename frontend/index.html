@@ -152,6 +152,13 @@
                             <path d="M12 5v14" />
                         </svg>
                         Añadir Producto
+                    <button class="btn btn-primary" id="btn-modal-correo" onclick="modalCorreo.open()" style="margin-right: 10px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        Enviar Correo
+                    </button>
                     <button class="btn btn-success" id="btn-guardar-cotizacion" onclick="guardarCotizacion()">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -527,6 +534,47 @@
         </div>
     </div>
 
+        <!-- ═══════════ MODAL: ENVIAR CORREO ═══════════ -->
+    <div class="modal-overlay" id="modal-correo" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-correo-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px; height:24px; display:inline-block; vertical-align:middle; margin-right:8px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    Enviar Cotización por Correo
+                </h3>
+                <button class="btn-close" onclick="modalCorreo.close()" aria-label="Cerrar modal">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="form-correo" onsubmit="enviarCorreoCotizacion(event)">
+                    <div class="form-group">
+                        <label for="correo-destinatario">Destinatario</label>
+                        <input type="email" id="correo-destinatario" required placeholder="correo@cliente.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="correo-asunto">Asunto</label>
+                        <input type="text" id="correo-asunto" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="correo-mensaje">Mensaje</label>
+                        <textarea id="correo-mensaje" rows="5" required style="resize:vertical"></textarea>
+                    </div>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                        El PDF de la cotización se adjuntará automáticamente.
+                    </p>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" onclick="modalCorreo.close()">Cancelar</button>
+                        <button type="submit" class="btn-primary" id="btn-enviar-correo">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                            Enviar Correo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <!-- ═══════════ MODAL: NUEVO PRODUCTO ═══════════ -->
     <div class="modal-overlay" id="modal-producto" role="dialog" aria-modal="true"
         aria-labelledby="modal-producto-title" aria-hidden="true">

@@ -5,11 +5,13 @@ const { Pool } = require('pg');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
+const puppeteer = require('puppeteer');
 require('dotenv').config();
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Increased limit for HTML payload
 app.use(cookieParser());
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_key_cotizapro_2026';
@@ -288,7 +290,87 @@ app.put('/cotizaciones/:id/estado', requireAuth, async (req, res) => {
   }
 });
 
-// 8. OBTENER historial de cotizaciones
+// 8. ENVIAR cotización por correo
+app.post('/cotizaciones/:id/enviar', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const { destinatario, asunto, mensaje, html } = req.body;
+  const usuario = req.user?.username || 'Sistema';
+
+  if (!destinatario || !asunto || !html) {
+    return res.status(400).send('Faltan datos requeridos (destinatario, asunto o html)');
+  }
+
+  const client = await pool.connect();
+  let browser;
+  try {
+    // 1. Generar PDF con Puppeteer
+    browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+    
+    // 2. Configurar Nodemailer (usar variables de entorno)
+    // Si no hay variables de entorno, usaremos un mock o devolveremos error,
+    // pero para probar asumimos que están configuradas en .env o usamos etherial (prueba)
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.ethereal.email',
+      port: process.env.SMTP_PORT || 587,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    });
+
+    // 3. Enviar correo
+    const mailOptions = {
+      from: process.env.SMTP_FROM || '"Cotizador Empresa" <no-reply@cotizador.com>',
+      to: destinatario,
+      subject: asunto,
+      text: mensaje || 'Adjunto enviamos la cotización.',
+      attachments: [{
+        filename: `Cotizacion_COT-${String(id).padStart(4, '0')}.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf'
+      }]
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    // 4. Actualizar BD
+    await client.query('BEGIN');
+    
+    // Registrar el envío
+    await client.query(
+      'INSERT INTO envios_correo (cotizacion_id, destinatario, asunto) VALUES ($1, $2, $3)',
+      [id, destinatario, asunto]
+    );
+
+    // Actualizar estado si estaba en Borrador
+    const oldStateRes = await client.query('SELECT estado FROM cotizaciones WHERE id = $1', [id]);
+    if (oldStateRes.rows.length > 0) {
+      const estado_anterior = oldStateRes.rows[0].estado;
+      if (estado_anterior === 'Borrador') {
+        await client.query("UPDATE cotizaciones SET estado = 'Enviada' WHERE id = $1", [id]);
+        await client.query(
+          'INSERT INTO historial_estados (cotizacion_id, estado_anterior, estado_nuevo, usuario) VALUES ($1, $2, $3, $4)',
+          [id, estado_anterior, 'Enviada', usuario]
+        );
+      }
+    }
+
+    await client.query('COMMIT');
+    res.json({ mensaje: 'Correo enviado correctamente y estado actualizado' });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error(err);
+    res.status(500).send('Error al enviar correo: ' + err.message);
+  } finally {
+    if (browser) await browser.close();
+    client.release();
+  }
+});
+
+// 9. OBTENER historial de cotizaciones
 app.get('/cotizaciones', requireAuth, async (req, res) => {
   try {
     const result = await pool.query(`

@@ -834,3 +834,98 @@ function abrirNuevoCliente() {
     document.getElementById('form-cliente').reset();
     modalCliente.open();
 }
+// ----------- MODAL CORREO -----------
+const modalCorreo = {
+    overlay: document.getElementById('modal-correo'),
+    open: function() {
+        if (!window.currentCotizacionId) {
+            showToast('Debe guardar la cotización primero', 'error');
+            return;
+        }
+        // Pre-fill email si se ha seleccionado un cliente
+        const clienteId = document.getElementById('select-cliente').value;
+        if (clienteId) {
+            const cliente = clientes.find(c => c.id == clienteId);
+            if (cliente && cliente.email) {
+                document.getElementById('correo-destinatario').value = cliente.email;
+            }
+        }
+        
+        document.getElementById('correo-asunto').value = Cotización N° COT- + String(window.currentCotizacionId).padStart(4, '0');
+        document.getElementById('correo-mensaje').value = Estimado/a,\n\nAdjunto enviamos la cotización solicitada.\n\nSaludos cordiales.;
+        
+        this.overlay.style.display = 'flex';
+        this.overlay.setAttribute('aria-hidden', 'false');
+    },
+    close: function() {
+        this.overlay.style.display = 'none';
+        this.overlay.setAttribute('aria-hidden', 'true');
+    }
+};
+
+async function enviarCorreoCotizacion(e) {
+    e.preventDefault();
+    if (!window.currentCotizacionId) return;
+
+    const btn = document.getElementById('btn-enviar-correo');
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = <span class="spinner"></span> Enviando...;
+
+    try {
+        // Obtenemos el HTML completo del documento para generar el PDF
+        // Removemos las clases hide-print o botones de cerrar, similar al window.print()
+        const clone = document.getElementById('wysiwyg-container').cloneNode(true);
+        const botonesEliminar = clone.querySelectorAll('.btn-remove');
+        botonesEliminar.forEach(b => b.remove());
+        
+        const estilos = document.querySelector('style') ? document.querySelector('style').outerHTML : '';
+        const links = document.querySelectorAll('link[rel="stylesheet"]');
+        let cssLinks = '';
+        links.forEach(l => cssLinks += l.outerHTML);
+
+        const htmlCompleto = 
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Cotización</title>
+            <style>
+                body { font-family: Arial, sans-serif; background: #fff !important; color: #000 !important; }
+                textarea { resize: none; border: none; overflow: hidden; font-family: Arial, sans-serif; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+                th { background: #eee; }
+            </style>
+             + estilos + cssLinks + 
+        </head>
+        <body style="padding: 20px;">
+             + clone.outerHTML + 
+        </body>
+        </html>;
+
+        const payload = {
+            destinatario: document.getElementById('correo-destinatario').value,
+            asunto: document.getElementById('correo-asunto').value,
+            mensaje: document.getElementById('correo-mensaje').value,
+            html: htmlCompleto
+        };
+
+        const res = await fetch($/cotizaciones/{window.currentCotizacionId}/enviar, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error(await res.text());
+
+        showToast('Correo enviado exitosamente', 'success');
+        modalCorreo.close();
+        cargarHistorial(); // Refrescar el historial para ver el badge "Enviada"
+    } catch (err) {
+        showToast('Error al enviar: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
