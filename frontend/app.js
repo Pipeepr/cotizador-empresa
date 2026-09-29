@@ -496,12 +496,12 @@ function agregarLineaWysiwyg(sku = null) {
     
     const tr = document.createElement('tr');
     tr.innerHTML = `
-        <td style="text-align: left; width: 45px;">
+        <td style="text-align: left; width: 75px;">
             <div style="display:flex; align-items:center; gap: 3px;">
                 <button class="btn-remove print-hide" onclick="this.closest('tr').remove(); recalcularTotalesWysiwyg();" title="Eliminar" style="padding: 2px;">
                     ${Icons.x}
                 </button>
-                <input type="text" class="wysiwyg-input sku-input" placeholder="CÓD" value="${escapeHtml(sku || '')}" style="width: 100%; font-size: 11px;">
+                <input type="text" class="wysiwyg-input sku-input" placeholder="CÓD" value="${escapeHtml(sku || '')}" style="width: 100%; font-size: 11px; max-length: 10;">
             </div>
         </td>
         <td style="text-align: left;">
