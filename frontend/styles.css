@@ -1359,13 +1359,10 @@ textarea.wysiwyg-input.desc-input:focus {
         box-shadow: none !important;
         border: none !important;
         margin: 0 auto !important;
-        padding: 0 !important; /* Quitar padding gigante en print para evitar hojas en blanco */
+        padding: 15mm !important; /* Restaurar márgenes para que no se pegue a los bordes */
         max-width: 100% !important;
         width: 100% !important;
         box-sizing: border-box !important;
-        position: absolute;
-        top: 0;
-        left: 0;
     }
     
     /* Override dark colors to black for print */
