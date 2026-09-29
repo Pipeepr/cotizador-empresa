@@ -260,6 +260,37 @@ app.put('/cotizaciones/:id', requireAuth, async (req, res) => {
   }
 });
 
+// 6.5 ELIMINAR cotización
+app.delete('/cotizaciones/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    // Check if it exists
+    const checkRes = await client.query('SELECT id FROM cotizaciones WHERE id = $1', [id]);
+    if (checkRes.rows.length === 0) throw new Error('Cotización no encontrada');
+
+    // Delete related records manually to avoid foreign key constraint errors
+    await client.query('DELETE FROM detalle_cotizaciones WHERE cotizacion_id = $1', [id]);
+    await client.query('DELETE FROM historial_estados WHERE cotizacion_id = $1', [id]);
+    await client.query('DELETE FROM envios_correo WHERE cotizacion_id = $1', [id]);
+    await client.query('DELETE FROM notas_venta WHERE cotizacion_id = $1', [id]);
+    
+    // Delete main record
+    await client.query('DELETE FROM cotizaciones WHERE id = $1', [id]);
+
+    await client.query('COMMIT');
+    res.json({ mensaje: 'Cotización eliminada con éxito' });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error(err.message);
+    res.status(500).send(err.message || 'Error al eliminar cotización');
+  } finally {
+    client.release();
+  }
+});
+
 // 7. ACTUALIZAR estado de cotización
 app.put('/cotizaciones/:id/estado', requireAuth, async (req, res) => {
   const { id } = req.params;

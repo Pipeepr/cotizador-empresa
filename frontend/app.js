@@ -761,9 +761,17 @@ async function cargarHistorial() {
             const badgeClass = badgeMap[estado] || 'badge-borrador';
 
             // Botones de acción
-            let actionBtns = `<button class="btn btn-sm btn-ghost" onclick="abrirDetalleCotizacion(${c.id})">
-                ${Icons.clipboardList} Editar
-            </button>`;
+            let actionBtns = `<div style="display:flex; gap: 4px;">
+                <button class="btn btn-sm btn-ghost" onclick="abrirDetalleCotizacion(${c.id})" title="Editar / Ver Detalle">
+                    ${Icons.clipboardList}
+                </button>
+                <button class="btn btn-sm btn-ghost" onclick="imprimirCotizacionDesdeHistorial(${c.id})" title="Generar PDF">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v8H6z"></path></svg>
+                </button>
+                <button class="btn btn-sm btn-ghost" onclick="confirmarBorrarCotizacion(${c.id})" title="Eliminar" style="color:var(--danger)">
+                    ${Icons.trash}
+                </button>
+            </div>`;
 
             // Dropdown de cambio de estado
             const nextStates = estadoFlow[estado] || [];
@@ -834,6 +842,33 @@ async function cambiarEstadoCotizacion(id, nuevoEstado, selectEl) {
         showToast(err.message || 'Error al cambiar estado', 'error');
         if (selectEl) selectEl.value = '';
     }
+}
+
+// ═══════════ ELIMINAR COTIZACIÓN ═══════════
+async function confirmarBorrarCotizacion(id) {
+    const confirm = await modalConfirm.show(`¿Estás seguro de eliminar la cotización COT-${String(id).padStart(4, '0')}? Esta acción no se puede deshacer.`);
+    if (confirm) {
+        try {
+            const res = await fetch(`${API}/cotizaciones/${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Error al eliminar');
+            showToast('Cotización eliminada', 'success');
+            cargarHistorial();
+        } catch (err) {
+            showToast('Error al eliminar la cotización', 'error');
+        }
+    }
+}
+
+// ═══════════ IMPRIMIR DESDE HISTORIAL ═══════════
+async function imprimirCotizacionDesdeHistorial(id) {
+    // Abrimos el detalle primero (para que el DOM se llene) y luego disparamos print
+    await abrirDetalleCotizacion(id);
+    setTimeout(() => {
+        const ot = document.title;
+        document.title = `N°COTIZACION COT-${String(id).padStart(4, '0')}`;
+        window.print();
+        setTimeout(() => document.title = ot, 1000);
+    }, 500);
 }
 
 // ═══════════ ABRIR DETALLE / EDITAR COTIZACIÓN ═══════════
