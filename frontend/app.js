@@ -861,8 +861,8 @@ async function confirmarBorrarCotizacion(id) {
 
 // ═══════════ IMPRIMIR DESDE HISTORIAL ═══════════
 async function imprimirCotizacionDesdeHistorial(id) {
-    // Abrimos el detalle primero (para que el DOM se llene) y luego disparamos print
-    await abrirDetalleCotizacion(id);
+    // Abrimos el detalle primero (para que el DOM se llene) sin cambiar de sección
+    await abrirDetalleCotizacion(id, false);
     setTimeout(() => {
         const ot = document.title;
         document.title = `N°COTIZACION COT-${String(id).padStart(4, '0')}`;
@@ -872,7 +872,7 @@ async function imprimirCotizacionDesdeHistorial(id) {
 }
 
 // ═══════════ ABRIR DETALLE / EDITAR COTIZACIÓN ═══════════
-async function abrirDetalleCotizacion(id) {
+async function abrirDetalleCotizacion(id, showEditor = true) {
     try {
         const res = await fetch(`${API}/cotizaciones/${id}`);
         if (!res.ok) throw new Error('Error fetching quote');
@@ -913,9 +913,13 @@ async function abrirDetalleCotizacion(id) {
         });
         recalcularTotalesWysiwyg();
         
-        // 6. Cambiar vista al editor
-        switchSection('cotizacion');
-        showToast(`Cotización #${id} cargada para edición`, 'success');
+        // 6. Cambiar vista al editor (opcional)
+        if (showEditor) {
+            switchSection('cotizacion');
+            showToast(`Cotización #${id} cargada para edición`, 'success');
+        } else {
+            showToast(`Cotización #${id} cargada para impresión`, 'success');
+        }
     } catch (err) {
         console.error(err);
         showToast('Error al cargar la cotización', 'error');
