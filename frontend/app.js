@@ -851,8 +851,11 @@ const modalCorreo = {
             }
         }
         
-        document.getElementById('correo-asunto').value = `Cotización N° COT-` + String(window.currentCotizacionId).padStart(4, '0');
-        document.getElementById('correo-mensaje').value = `Estimado/a,\n\nAdjunto enviamos la cotización solicitada.\n\nSaludos cordiales.`;
+        const docIdText = document.getElementById('doc-id').textContent;
+        document.getElementById('correo-asunto').value = docIdText + ' - Cotización';
+        
+        const mensajeDefault = localStorage.getItem('correoMensajeDefault') || 'Estimado/a,\n\nAdjunto enviamos la cotización solicitada.\n\nSaludos cordiales.';
+        document.getElementById('correo-mensaje').value = mensajeDefault;
         
         this.overlay.style.display = 'flex';
         this.overlay.setAttribute('aria-hidden', 'false');
@@ -867,65 +870,38 @@ async function enviarCorreoCotizacion(e) {
     e.preventDefault();
     if (!window.currentCotizacionId) return;
 
-    const btn = document.getElementById('btn-enviar-correo');
-    const originalHTML = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = `<span class="spinner"></span> Enviando...`;
+    const destinatario = document.getElementById('correo-destinatario').value;
+    const asunto = document.getElementById('correo-asunto').value;
+    const mensaje = document.getElementById('correo-mensaje').value;
 
+    // Guardar el mensaje modificado como el nuevo mensaje por defecto en localStorage
+    localStorage.setItem('correoMensajeDefault', mensaje);
+
+    // Actualizar estado a "Enviada" en el backend
     try {
-        // Obtenemos el HTML completo del documento para generar el PDF
-        // Removemos las clases hide-print o botones de cerrar, similar al window.print()
-        const clone = document.getElementById('wysiwyg-container').cloneNode(true);
-        const botonesEliminar = clone.querySelectorAll('.btn-remove');
-        botonesEliminar.forEach(b => b.remove());
-        
-        const estilos = document.querySelector('style') ? document.querySelector('style').outerHTML : '';
-        const links = document.querySelectorAll('link[rel="stylesheet"]');
-        let cssLinks = '';
-        links.forEach(l => cssLinks += l.outerHTML);
-
-        const htmlCompleto = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <title>Cotización</title>
-            <style>
-                body { font-family: Arial, sans-serif; background: #fff !important; color: #000 !important; }
-                textarea { resize: none; border: none; overflow: hidden; font-family: Arial, sans-serif; }
-                table { width: 100%; border-collapse: collapse; }
-                th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-                th { background: #eee; }
-            </style>
-            ${estilos}${cssLinks}
-        </head>
-        <body style="padding: 20px;">
-            ${clone.outerHTML}
-        </body>
-        </html>`;
-
-        const payload = {
-            destinatario: document.getElementById('correo-destinatario').value,
-            asunto: document.getElementById('correo-asunto').value,
-            mensaje: document.getElementById('correo-mensaje').value,
-            html: htmlCompleto
-        };
-
-        const res = await fetch(`${API}/cotizaciones/${window.currentCotizacionId}/enviar`, {
-            method: 'POST',
+        await fetch(`${API}/cotizaciones/${window.currentCotizacionId}/estado`, {
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ estado: 'Enviada' })
         });
-
-        if (!res.ok) throw new Error(await res.text());
-
-        showToast('Correo enviado exitosamente', 'success');
-        modalCorreo.close();
-        cargarHistorial(); // Refrescar el historial para ver el badge "Enviada"
+        cargarHistorial();
     } catch (err) {
-        showToast('Error al enviar: ' + err.message, 'error');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalHTML;
+        console.error("Error actualizando estado", err);
     }
+
+    // Disparar la impresion/descarga del PDF localmente
+    showToast('Generando PDF para que lo adjuntes en Gmail...', 'info');
+    setTimeout(() => {
+        const ot = document.title;
+        const docId = document.getElementById('doc-id').textContent;
+        document.title = `N°COTIZACION ${docId}`;
+        window.print();
+        setTimeout(() => document.title = ot, 1000);
+        
+        // Abrir Gmail después de imprimir
+        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(destinatario)}&su=${encodeURIComponent(asunto)}&body=${encodeURIComponent(mensaje + "\n\n(Asegúrate de adjuntar el PDF generado)")}`;
+        window.open(gmailUrl, '_blank');
+        
+        modalCorreo.close();
+    }, 500);
 }
