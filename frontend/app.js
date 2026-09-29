@@ -1115,7 +1115,7 @@ let googleTokenClient;
 function initGoogleAuth() {
     if (typeof google === 'undefined') return;
     googleTokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: 'TU_CLIENT_ID_DE_GOOGLE_AQUI',
+        client_id: '360557152471-b270feg6rv0nm39l04geqjkjlosbtv3n.apps.googleusercontent.com',
         scope: 'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email',
         callback: (tokenResponse) => {
             if (tokenResponse && tokenResponse.access_token) {
