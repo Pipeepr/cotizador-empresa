@@ -474,7 +474,7 @@ function actualizarClienteDocs() {
     if (docGiro) docGiro.textContent = "Giro: " + (cliente.giro || 'No especificado');
 }
 
-function agregarLineaWysiwyg(sku = null) {
+function agregarLineaWysiwyg(sku = null, nombreOverride = null, precioOverride = null) {
     const tbody = document.getElementById('tabla-cotizacion');
     
     // Quitar estado vacío
@@ -482,10 +482,10 @@ function agregarLineaWysiwyg(sku = null) {
         tbody.innerHTML = '';
     }
     
-    let nombre = "Nuevo producto";
-    let precio = 0;
+    let nombre = nombreOverride || "Nuevo producto";
+    let precio = precioOverride != null ? Number(precioOverride) : 0;
     
-    if (sku) {
+    if (sku && !nombreOverride) {
         const prod = productos.find(p => p.codigo_sku === sku);
         if (prod) {
             nombre = prod.nombre;
@@ -623,8 +623,13 @@ async function guardarCotizacion() {
     btn.innerHTML = `<span class="spinner"></span> Guardando...`;
 
     try {
-        const res = await fetch(`${API}/cotizaciones`, {
-            method: 'POST',
+        // If editing existing, use PUT; otherwise POST
+        const isEdit = !!window.currentCotizacionId;
+        const url = isEdit ? `${API}/cotizaciones/${window.currentCotizacionId}` : `${API}/cotizaciones`;
+        const method = isEdit ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+            method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
@@ -632,11 +637,16 @@ async function guardarCotizacion() {
         if (!res.ok) throw new Error('Error al guardar');
 
         const data = await res.json();
+        const savedId = data.id || window.currentCotizacionId;
+        window.currentCotizacionId = savedId;
         
         // Actualiza el numero de COT visualmente
-        document.getElementById('doc-id').textContent = `COT-${String(data.id).padStart(4, '0')}`;
+        document.getElementById('doc-id').textContent = `COT-${String(savedId).padStart(4, '0')}`;
         
-        showToast(`Cotización #${data.id} guardada. Generando PDF...`, 'success');
+        showToast(`Cotización #${savedId} ${isEdit ? 'actualizada' : 'guardada'}. Generando PDF...`, 'success');
+
+        // Refrescar historial
+        cargarHistorial();
 
         // Disparar PDF
         setTimeout(() => {
@@ -672,6 +682,7 @@ document.addEventListener('keydown', (e) => {
         modalCliente.close();
         modalProducto.close();
         modalConfirm.cancel();
+        if (typeof modalCorreo !== 'undefined') modalCorreo.close();
     }
 });
 
@@ -680,6 +691,7 @@ document.addEventListener('click', (e) => {
     if (e.target.id === 'modal-cliente') modalCliente.close();
     if (e.target.id === 'modal-producto') modalProducto.close();
     if (e.target.id === 'modal-confirm') modalConfirm.cancel();
+    if (e.target.id === 'modal-correo') modalCorreo.close();
 });
 
 // ═══════════ ELIMINAR CLIENTE ═══════════
@@ -709,7 +721,7 @@ async function cargarHistorial() {
     const tbody = document.getElementById('tabla-historial');
     if (!tbody) return;
     
-    tbody.innerHTML = renderSkeletonRows(5, 5); // Aumentado a 5 columnas
+    tbody.innerHTML = renderSkeletonRows(5, 6);
 
     try {
         const res = await fetch(`${API}/cotizaciones`);
@@ -718,24 +730,51 @@ async function cargarHistorial() {
         const data = await res.json();
         
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><p>No hay cotizaciones registradas</p></div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>No hay cotizaciones registradas</p></div></td></tr>';
             return;
         }
+
+        // Flujo de estados válidos
+        const estadoFlow = {
+            'Borrador': ['Enviada', 'Cancelada'],
+            'Enviada': ['Aprobada', 'Rechazada'],
+            'Aprobada': ['Nota de Venta', 'Cancelada'],
+            'Nota de Venta': ['Facturada', 'Cancelada'],
+            'Facturada': ['Completada'],
+            'Completada': [],
+            'Rechazada': [],
+            'Cancelada': [],
+        };
 
         tbody.innerHTML = data.map(c => {
             const dateStr = new Date(c.fecha).toLocaleDateString();
             const clientName = escapeHtml(c.cliente_empresa || c.cliente_nombre || 'N/A');
             
             // Render de Badge
-            let badgeClass = 'badge-borrador';
-            if (c.estado === 'Enviada') badgeClass = 'badge-enviada';
-            if (c.estado === 'Aprobada') badgeClass = 'badge-aprobada';
-            if (c.estado === 'Nota de Venta') badgeClass = 'badge-nota';
-            if (c.estado === 'Facturada') badgeClass = 'badge-facturada';
-            if (c.estado === 'Completada') badgeClass = 'badge-completada';
-            if (c.estado === 'Rechazada' || c.estado === 'Cancelada') badgeClass = 'badge-cancelada';
+            const badgeMap = {
+                'Borrador': 'badge-borrador', 'Enviada': 'badge-enviada',
+                'Aprobada': 'badge-aprobada', 'Nota de Venta': 'badge-nota',
+                'Facturada': 'badge-facturada', 'Completada': 'badge-completada',
+                'Rechazada': 'badge-cancelada', 'Cancelada': 'badge-cancelada',
+            };
+            const estado = c.estado || 'Borrador';
+            const badgeClass = badgeMap[estado] || 'badge-borrador';
 
-            const btnText = c.estado === 'Borrador' ? 'Editar' : 'Ver Detalle';
+            // Botones de acción
+            let actionBtns = `<button class="btn btn-sm btn-ghost" onclick="abrirDetalleCotizacion(${c.id})">
+                ${Icons.clipboardList} Editar
+            </button>`;
+
+            // Dropdown de cambio de estado
+            const nextStates = estadoFlow[estado] || [];
+            let estadoSelect = '';
+            if (nextStates.length > 0) {
+                const options = nextStates.map(s => `<option value="${s}">${s}</option>`).join('');
+                estadoSelect = `<select class="form-control historial-estado-select" onchange="cambiarEstadoCotizacion(${c.id}, this.value, this)">
+                    <option value="" disabled selected>Avanzar →</option>
+                    ${options}
+                </select>`;
+            }
 
             return `
                 <tr>
@@ -743,65 +782,108 @@ async function cargarHistorial() {
                     <td>${dateStr}</td>
                     <td>${clientName}</td>
                     <td>${formatCLP(c.total)}</td>
-                    <td><span class="badge-estado ${badgeClass}">${c.estado || 'Borrador'}</span></td>
                     <td>
-                        <button class="btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="abrirDetalleCotizacion(${c.id}, '${c.estado}')">
-                            ${btnText}
-                        </button>
+                        <span class="badge-estado ${badgeClass}">${estado}</span>
+                        ${estadoSelect}
                     </td>
+                    <td>${actionBtns}</td>
                 </tr>
             `;
         }).join('');
     } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><p style="color:var(--danger)">Error al cargar historial</p></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p style="color:var(--danger)">Error al cargar historial</p></div></td></tr>';
     }
 }
 
-async function abrirDetalleCotizacion(id, estado) {
-    if (estado === 'Borrador') {
-        // Cargar en el editor WYSIWYG
+// ═══════════ CAMBIAR ESTADO COTIZACIÓN ═══════════
+async function cambiarEstadoCotizacion(id, nuevoEstado, selectEl) {
+    if (!nuevoEstado) return;
+
+    // Para Nota de Venta, usar endpoint especial
+    if (nuevoEstado === 'Nota de Venta') {
         try {
-            const res = await fetch(`${API}/cotizaciones/${id}`);
-            if (!res.ok) throw new Error('Error fetching quote');
-            const data = await res.json();
-            
-            // 1. Limpiar editor
-            document.getElementById('tabla-cotizacion').innerHTML = '';
-            
-            // 2. Set ID global
-            window.currentCotizacionId = id;
-            document.getElementById('doc-id').textContent = `COT-${String(id).padStart(4, '0')}`;
-            
-            // 3. Setear cliente
-            const selectCliente = document.getElementById('select-cliente');
-            if(selectCliente.querySelector(`option[value="${data.cliente_id}"]`)) {
-                selectCliente.value = data.cliente_id;
-                actualizarDatosClienteDocumento();
-            }
-            
-            // 4. Agregar lineas
-            data.detalles.forEach(d => {
-                agregarLineaWysiwyg(d.producto_sku, d.nombre, d.precio_venta);
-                // Necesitamos settear la cantidad después de crear la fila, la fila es la última agregada
-                const rows = document.getElementById('tabla-cotizacion').querySelectorAll('tr');
-                const lastRow = rows[rows.length - 1];
-                if (lastRow) {
-                    const qtyInput = lastRow.querySelector('.qty-input');
-                    if (qtyInput) qtyInput.value = d.cantidad;
-                }
+            const res = await fetch(`${API}/cotizaciones/${id}/nota-venta`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
             });
-            recalcularTotalesWysiwyg();
-            
-            // Cambiar vista al editor
-            switchSection('cotizador');
-            showToast(`Cotización #${id} cargada para edición`, 'success');
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text);
+            }
+            const data = await res.json();
+            showToast(`${data.numero} generada para COT-${String(id).padStart(4, '0')}`, 'success');
+            cargarHistorial();
         } catch (err) {
-            console.error(err);
-            showToast('Error al cargar la cotización', 'error');
+            showToast(err.message || 'Error al generar Nota de Venta', 'error');
+            if (selectEl) selectEl.value = '';
         }
-    } else {
-        // Por ahora solo mostraremos un Toast
-        showToast('Vista de detalle en construcción...', 'info');
+        return;
+    }
+
+    // Para otros estados, usar endpoint genérico
+    try {
+        const res = await fetch(`${API}/cotizaciones/${id}/estado`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ estado: nuevoEstado }),
+        });
+        if (!res.ok) throw new Error('Error al actualizar estado');
+        showToast(`COT-${String(id).padStart(4, '0')} → ${nuevoEstado}`, 'success');
+        cargarHistorial();
+    } catch (err) {
+        showToast(err.message || 'Error al cambiar estado', 'error');
+        if (selectEl) selectEl.value = '';
+    }
+}
+
+// ═══════════ ABRIR DETALLE / EDITAR COTIZACIÓN ═══════════
+async function abrirDetalleCotizacion(id) {
+    try {
+        const res = await fetch(`${API}/cotizaciones/${id}`);
+        if (!res.ok) throw new Error('Error fetching quote');
+        const data = await res.json();
+        
+        // 1. Limpiar editor
+        document.getElementById('tabla-cotizacion').innerHTML = '';
+        
+        // 2. Set ID global
+        window.currentCotizacionId = id;
+        document.getElementById('doc-id').textContent = `COT-${String(id).padStart(4, '0')}`;
+        
+        // 3. Setear fecha
+        if (data.fecha) {
+            const d = new Date(data.fecha);
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
+            document.getElementById('doc-fecha').textContent = `${dd}/${mm}/${yyyy}`;
+        }
+        
+        // 4. Setear cliente
+        const selectCliente = document.getElementById('select-cliente');
+        if (selectCliente.querySelector(`option[value="${data.cliente_id}"]`)) {
+            selectCliente.value = data.cliente_id;
+            actualizarClienteDocs();
+        }
+        
+        // 5. Agregar lineas
+        data.detalles.forEach(d => {
+            agregarLineaWysiwyg(d.producto_sku, d.nombre, d.precio_venta);
+            const rows = document.getElementById('tabla-cotizacion').querySelectorAll('tr');
+            const lastRow = rows[rows.length - 1];
+            if (lastRow) {
+                const qtyInput = lastRow.querySelector('.qty-input');
+                if (qtyInput) qtyInput.value = d.cantidad;
+            }
+        });
+        recalcularTotalesWysiwyg();
+        
+        // 6. Cambiar vista al editor
+        switchSection('cotizacion');
+        showToast(`Cotización #${id} cargada para edición`, 'success');
+    } catch (err) {
+        console.error(err);
+        showToast('Error al cargar la cotización', 'error');
     }
 }
 
@@ -809,7 +891,7 @@ function abrirEditarCliente(id) {
     const cliente = clientes.find(c => c.id == id);
     if (!cliente) return;
     document.getElementById('modal-cliente-title').innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px; height:24px; display:inline-block; vertical-align:middle; margin-right:8px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-lg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
         Editar Cliente
     `;
     document.getElementById('cl-id').value = cliente.id;
@@ -827,19 +909,20 @@ function abrirEditarCliente(id) {
 
 function abrirNuevoCliente() {
     document.getElementById('modal-cliente-title').innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px; height:24px; display:inline-block; vertical-align:middle; margin-right:8px;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-lg"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         Nuevo Cliente
     `;
     document.getElementById('cl-id').value = '';
     document.getElementById('form-cliente').reset();
     modalCliente.open();
 }
+
 // ----------- MODAL CORREO -----------
 const modalCorreo = {
-    overlay: document.getElementById('modal-correo'),
+    el: () => document.getElementById('modal-correo'),
     open: function() {
         if (!window.currentCotizacionId) {
-            showToast('Debe guardar la cotizaci�n primero', 'error');
+            showToast('Debe guardar la cotización primero', 'error');
             return;
         }
         // Pre-fill email si se ha seleccionado un cliente
@@ -852,17 +935,23 @@ const modalCorreo = {
         }
         
         const docIdText = document.getElementById('doc-id').textContent;
-        document.getElementById('correo-asunto').value = docIdText + ' - Cotización';
+        document.getElementById('correo-asunto').value = docIdText + ' - Cotización TORNOMETAL S.P.A';
         
-        const mensajeDefault = localStorage.getItem('correoMensajeDefault') || 'Estimado/a,\n\nAdjunto enviamos la cotización solicitada.\n\nSaludos cordiales.';
+        const mensajeDefault = localStorage.getItem('correoMensajeDefault') || 'Estimado/a,\n\nAdjunto enviamos la cotización solicitada para su revisión.\n\nQuedamos atentos a cualquier consulta.\n\nSaludos cordiales,\nTORNOMETAL S.P.A';
         document.getElementById('correo-mensaje').value = mensajeDefault;
         
-        this.overlay.style.display = 'flex';
-        this.overlay.setAttribute('aria-hidden', 'false');
+        const overlay = this.el();
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        const firstInput = overlay.querySelector('input');
+        if (firstInput) setTimeout(() => firstInput.focus(), 100);
     },
     close: function() {
-        this.overlay.style.display = 'none';
-        this.overlay.setAttribute('aria-hidden', 'true');
+        const overlay = this.el();
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
     }
 };
 
@@ -889,19 +978,20 @@ async function enviarCorreoCotizacion(e) {
         console.error("Error actualizando estado", err);
     }
 
-    // Disparar la impresion/descarga del PDF localmente
-    showToast('Generando PDF para que lo adjuntes en Gmail...', 'info');
+    // Abrir Gmail con los datos pre-llenados
+    showToast('Abriendo Gmail con el correo listo para enviar...', 'info');
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(destinatario)}&su=${encodeURIComponent(asunto)}&body=${encodeURIComponent(mensaje + '\n\n---\nRecuerda adjuntar el PDF de la cotización.')}`;
+    window.open(gmailUrl, '_blank');
+    
+    // Generar PDF para que descarguen/impriman
     setTimeout(() => {
         const ot = document.title;
         const docId = document.getElementById('doc-id').textContent;
         document.title = `N°COTIZACION ${docId}`;
         window.print();
         setTimeout(() => document.title = ot, 1000);
-        
-        // Abrir Gmail después de imprimir
-        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(destinatario)}&su=${encodeURIComponent(asunto)}&body=${encodeURIComponent(mensaje + "\n\n(Asegúrate de adjuntar el PDF generado)")}`;
-        window.open(gmailUrl, '_blank');
-        
-        modalCorreo.close();
-    }, 500);
+    }, 800);
+    
+    modalCorreo.close();
 }
+
