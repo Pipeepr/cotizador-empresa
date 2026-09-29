@@ -1121,32 +1121,30 @@ async function enviarCorreoCotizacion(e) {
     // Guardar el mensaje modificado como el nuevo mensaje por defecto en localStorage
     localStorage.setItem('correoMensajeDefault', mensaje);
 
-    // Actualizar estado a "Enviada" en el backend
+    showToast('Generando PDF y enviando correo, por favor espere...', 'info');
+
+    // Clonar el documento para prepararlo para el envío
+    const htmlContent = `<!DOCTYPE html>\n${document.documentElement.outerHTML}`;
+
     try {
-        await fetch(`${API}/cotizaciones/${window.currentCotizacionId}/estado`, {
-            method: 'PUT',
+        const res = await fetch(`${API}/cotizaciones/${window.currentCotizacionId}/enviar`, {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ estado: 'Enviada' })
+            body: JSON.stringify({ destinatario, asunto, mensaje, html: htmlContent })
         });
+
+        if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(errText);
+        }
+
+        showToast('Correo enviado exitosamente con el PDF adjunto', 'success');
         cargarHistorial();
     } catch (err) {
-        console.error("Error actualizando estado", err);
+        console.error("Error enviando correo", err);
+        showToast('Error al enviar el correo. Revisa la consola o configuración SMTP.', 'error');
     }
 
-    // Abrir Gmail con los datos pre-llenados
-    showToast('Abriendo Gmail con el correo listo para enviar...', 'info');
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(destinatario)}&su=${encodeURIComponent(asunto)}&body=${encodeURIComponent(mensaje + '\n\n---\nRecuerda adjuntar el PDF de la cotización.')}`;
-    window.open(gmailUrl, '_blank');
-    
-    // Generar PDF para que descarguen/impriman
-    setTimeout(() => {
-        const ot = document.title;
-        const docId = document.getElementById('doc-id').textContent;
-        document.title = `N°COTIZACION ${docId}`;
-        window.print();
-        setTimeout(() => document.title = ot, 1000);
-    }, 800);
-    
     modalCorreo.close();
 }
 
