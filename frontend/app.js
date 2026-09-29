@@ -683,6 +683,7 @@ document.addEventListener('keydown', (e) => {
         modalProducto.close();
         modalConfirm.cancel();
         if (typeof modalCorreo !== 'undefined') modalCorreo.close();
+        if (typeof modalDetalle !== 'undefined') modalDetalle.close();
     }
 });
 
@@ -692,6 +693,7 @@ document.addEventListener('click', (e) => {
     if (e.target.id === 'modal-producto') modalProducto.close();
     if (e.target.id === 'modal-confirm') modalConfirm.cancel();
     if (e.target.id === 'modal-correo') modalCorreo.close();
+    if (e.target.id === 'modal-detalle') modalDetalle.close();
 });
 
 // ═══════════ ELIMINAR CLIENTE ═══════════
@@ -762,8 +764,11 @@ async function cargarHistorial() {
 
             // Botones de acción
             let actionBtns = `<div style="display:flex; gap: 4px;">
-                <button class="btn btn-sm btn-ghost" onclick="abrirDetalleCotizacion(${c.id})" title="Editar / Ver Detalle">
-                    ${Icons.clipboardList}
+                <button class="btn btn-sm btn-ghost" onclick="verDetalleCotizacion(${c.id})" title="Ver Resumen">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </button>
+                <button class="btn btn-sm btn-ghost" onclick="abrirDetalleCotizacion(${c.id})" title="Editar en Cotizador">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
                 </button>
                 <button class="btn btn-sm btn-ghost" onclick="imprimirCotizacionDesdeHistorial(${c.id})" title="Generar PDF">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v8H6z"></path></svg>
@@ -922,6 +927,76 @@ async function abrirDetalleCotizacion(id, showEditor = true) {
         }
     } catch (err) {
         console.error(err);
+        showToast('Error al cargar la cotización', 'error');
+    }
+}
+
+// ═══════════ MODAL DETALLE (SOLO LECTURA) ═══════════
+const modalDetalle = {
+    el: () => document.getElementById('modal-detalle'),
+    open: function() {
+        const overlay = this.el();
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+    },
+    close: function() {
+        const overlay = this.el();
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+    }
+};
+
+async function verDetalleCotizacion(id) {
+    try {
+        const res = await fetch(`${API}/cotizaciones/${id}`);
+        if (!res.ok) throw new Error('Error fetching quote');
+        const data = await res.json();
+        
+        let html = `
+            <div style="margin-bottom: 20px;">
+                <p><strong>N° Cotización:</strong> COT-${String(data.id).padStart(4, '0')}</p>
+                <p><strong>Fecha:</strong> ${new Date(data.fecha).toLocaleDateString()}</p>
+                <p><strong>Estado:</strong> <span class="badge-estado" style="display:inline-block">${data.estado || 'Borrador'}</span></p>
+                <p><strong>Cliente:</strong> ${escapeHtml(data.cliente_empresa || data.cliente_nombre || 'N/A')}</p>
+                <p><strong>Total:</strong> ${formatCLP(data.total)}</p>
+            </div>
+            <h4>Detalle de Productos</h4>
+            <table class="table" style="margin-top: 10px;">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cant.</th>
+                        <th>Precio Unit.</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.detalles.map(d => `
+                        <tr>
+                            <td>${escapeHtml(d.nombre)}</td>
+                            <td>${d.cantidad}</td>
+                            <td>${formatCLP(d.precio_venta)}</td>
+                            <td>${formatCLP(d.cantidad * d.precio_venta)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        
+        document.getElementById('modal-detalle-content').innerHTML = html;
+        
+        // Asignar funciones a los botones
+        document.getElementById('btn-detalle-editar').onclick = () => {
+            modalDetalle.close();
+            abrirDetalleCotizacion(id);
+        };
+        document.getElementById('btn-detalle-imprimir').onclick = () => {
+            modalDetalle.close();
+            imprimirCotizacionDesdeHistorial(id);
+        };
+        
+        modalDetalle.open();
+    } catch (err) {
         showToast('Error al cargar la cotización', 'error');
     }
 }
