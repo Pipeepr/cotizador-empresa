@@ -851,8 +851,8 @@ const modalCorreo = {
             }
         }
         
-        document.getElementById('correo-asunto').value = Cotizaci�n N� COT- + String(window.currentCotizacionId).padStart(4, '0');
-        document.getElementById('correo-mensaje').value = Estimado/a,\n\nAdjunto enviamos la cotizaci�n solicitada.\n\nSaludos cordiales.;
+        document.getElementById('correo-asunto').value = `Cotización N° COT-` + String(window.currentCotizacionId).padStart(4, '0');
+        document.getElementById('correo-mensaje').value = `Estimado/a,\n\nAdjunto enviamos la cotización solicitada.\n\nSaludos cordiales.`;
         
         this.overlay.style.display = 'flex';
         this.overlay.setAttribute('aria-hidden', 'false');
@@ -870,7 +870,7 @@ async function enviarCorreoCotizacion(e) {
     const btn = document.getElementById('btn-enviar-correo');
     const originalHTML = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = <span class="spinner"></span> Enviando...;
+    btn.innerHTML = `<span class="spinner"></span> Enviando...`;
 
     try {
         // Obtenemos el HTML completo del documento para generar el PDF
@@ -884,12 +884,12 @@ async function enviarCorreoCotizacion(e) {
         let cssLinks = '';
         links.forEach(l => cssLinks += l.outerHTML);
 
-        const htmlCompleto = 
+        const htmlCompleto = `
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset="utf-8">
-            <title>Cotizaci�n</title>
+            <title>Cotización</title>
             <style>
                 body { font-family: Arial, sans-serif; background: #fff !important; color: #000 !important; }
                 textarea { resize: none; border: none; overflow: hidden; font-family: Arial, sans-serif; }
@@ -897,12 +897,12 @@ async function enviarCorreoCotizacion(e) {
                 th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
                 th { background: #eee; }
             </style>
-             + estilos + cssLinks + 
+            ${estilos}${cssLinks}
         </head>
         <body style="padding: 20px;">
-             + clone.outerHTML + 
+            ${clone.outerHTML}
         </body>
-        </html>;
+        </html>`;
 
         const payload = {
             destinatario: document.getElementById('correo-destinatario').value,
@@ -911,7 +911,7 @@ async function enviarCorreoCotizacion(e) {
             html: htmlCompleto
         };
 
-        const res = await fetch($/cotizaciones/{window.currentCotizacionId}/enviar, {
+        const res = await fetch(`${API}/cotizaciones/${window.currentCotizacionId}/enviar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
