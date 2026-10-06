@@ -856,15 +856,15 @@ async function cargarHistorial() {
         const kanbanHTML = `
             <div class="odoo-kanban-card bg-orange">
                 <div class="count">${toConfirm}</div>
-                <div class="label">To Confirm</div>
+                <div class="label">Por Confirmar</div>
             </div>
             <div class="odoo-kanban-card bg-purple">
                 <div class="count">${toDeliver}</div>
-                <div class="label">To Deliver</div>
+                <div class="label">Para Entregar</div>
             </div>
             <div class="odoo-kanban-card bg-teal">
                 <div class="count">${toInvoice}</div>
-                <div class="label">A facturar</div>
+                <div class="label">A Facturar</div>
             </div>
         `;
         const kanbanEl = document.getElementById('odoo-kanban-states');
@@ -881,8 +881,8 @@ async function cargarHistorial() {
             'Nota de Venta': ['Facturada', 'Cancelada'],
             'Facturada': ['Completada'],
             'Completada': [],
-            'Rechazada': [],
-            'Cancelada': [],
+            'Rechazada': ['Borrador'],
+            'Cancelada': ['Borrador', 'Aprobada'],
         };
 
         tbody.innerHTML = data.map(c => {
