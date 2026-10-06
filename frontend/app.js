@@ -899,13 +899,13 @@ async function cargarHistorial() {
             const numStr = `S${String(c.id).padStart(5, '0')}`;
 
             let actionBtns = `<div style="display:flex; gap: 4px;">
-                <button class="btn btn-sm btn-ghost" onclick="verDetalleCotizacion(${c.id})" title="Ver Resumen" style="color:#9296a2;">
+                <button class="btn btn-sm btn-ghost" onclick="verDetalleCotizacion(${c.id})" title="Ver Resumen" style="color:#6b7280;">
                     ${Icons.info}
                 </button>
-                <button class="btn btn-sm btn-ghost" onclick="abrirDetalleCotizacion(${c.id})" title="Editar en Cotizador" style="color:#9296a2;">
+                <button class="btn btn-sm btn-ghost" onclick="abrirDetalleCotizacion(${c.id})" title="Editar en Cotizador" style="color:#6b7280;">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
                 </button>
-                <button class="btn btn-sm btn-ghost" onclick="confirmarBorrarCotizacion(${c.id})" title="Eliminar" style="color:#ff7878;">
+                <button class="btn btn-sm btn-ghost" onclick="confirmarBorrarCotizacion(${c.id})" title="Eliminar" style="color:#ef4444;">
                     ${Icons.trash2}
                 </button>
             </div>`;
@@ -914,7 +914,7 @@ async function cargarHistorial() {
             let estadoSelect = '';
             if (nextStates.length > 0) {
                 const options = nextStates.map(s => `<option value="${s}">${s}</option>`).join('');
-                estadoSelect = `<select class="form-control" style="background:transparent; border:none; color:#c9ccd6; font-size:12px; margin-left:8px;" onchange="cambiarEstadoCotizacion(${c.id}, this.value, this)">
+                estadoSelect = `<select class="form-control" style="background:transparent; border:none; color:#111827; font-size:12px; margin-left:8px;" onchange="cambiarEstadoCotizacion(${c.id}, this.value, this)">
                     <option value="" disabled selected>▾</option>
                     ${options}
                 </select>`;
@@ -925,7 +925,7 @@ async function cargarHistorial() {
                     <td><input type="checkbox"></td>
                     <td><strong>${numStr}</strong></td>
                     <td>${dateStr}</td>
-                    <td><span style="color:#5bc49c; background:#0b4f3b; padding:2px 6px; border-radius:4px; font-size:11px;">${clientName.charAt(0)}</span> ${clientName}</td>
+                    <td><span style="color:#065f46; background:#d1fae5; padding:2px 6px; border-radius:4px; font-size:11px;">${clientName.charAt(0)}</span> ${clientName}</td>
                     <td style="font-weight:bold;">${formatCLP(c.total)}</td>
                     <td>
                         <span class="odoo-badge ${odooBadge}">${estado}</span>
@@ -941,7 +941,7 @@ async function cargarHistorial() {
             tfoot.innerHTML = `<tr><td colspan="4"></td><td colspan="3">${formatCLP(totalGeneral)}</td></tr>`;
         }
     } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="7" style="color:#ff7878; text-align:center;">Error al cargar historial</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="color:#ef4444; text-align:center;">Error al cargar historial</td></tr>';
     }
 }
 
