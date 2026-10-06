@@ -3,37 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CotizaPro - Login</title>
+    <title>CotizaPro - Iniciar Sesión</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            --primary: #1e3a8a; /* Azul Oscuro */
+            --primary-dark: #0f172a; /* Fondo más oscuro */
+            --bg-color: #0b1120; 
+            --card-bg: #ffffff; /* Blanco */
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            /* Fondo gradiente azul oscuro elegante */
+            background: linear-gradient(135deg, var(--primary) 0%, var(--bg-color) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-wrapper {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 420px;
+            padding: 48px 40px;
+            text-align: center;
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo-container {
+            margin-bottom: 28px;
+        }
+
+        .logo-container img {
+            max-width: 220px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        h1 {
+            color: var(--text-main);
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 14.5px;
+            margin-bottom: 36px;
+            line-height: 1.5;
+        }
+
+        .google-btn-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .error-msg {
+            display: none;
+            background-color: #fef2f2;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            border: 1px solid #f87171;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .footer {
+            margin-top: 36px;
+            font-size: 13px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+    </style>
 </head>
-<body class="login-page">
-    <div class="login-split">
-        <!-- Left Side (White/Clean) -->
-        <div class="login-left">
-            <div class="login-container">
-                <div class="login-logo">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                    <span>TORNOMETAL</span>
-                </div>
-                
-                <h1>Bienvenido de vuelta</h1>
-                <p>Inicia sesión de forma segura usando tu cuenta de Google autorizada.</p>
-
-                <div class="error-msg" id="error-msg"></div>
-
-                <div class="google-btn-wrapper">
-                    <div id="google-btn"></div>
-                </div>
-            </div>
+<body>
+    <div class="login-wrapper">
+        <div class="logo-container">
+            <img src="logo.jpg" alt="Tornometal Logo">
         </div>
         
-        <!-- Right Side (Vibrant Gradient/Image) -->
-        <div class="login-right">
-            <div class="login-right-content">
-                <h2>CotizaPro</h2>
-                <p>Sistema profesional de cotizaciones empresariales.</p>
-            </div>
+        <h1>Acceso al Sistema</h1>
+        <p>Inicia sesión de forma segura para acceder al panel de cotizaciones de Tornometal.</p>
+
+        <div class="error-msg" id="error-msg"></div>
+
+        <div class="google-btn-container">
+            <!-- Contenedor donde Google inyectará su botón mágico -->
+            <div id="google-btn"></div>
+        </div>
+
+        <div class="footer">
+            &copy; 2026 Tornometal. Todos los derechos reservados.
         </div>
     </div>
 
@@ -44,7 +127,6 @@
             const errorMsg = document.getElementById('error-msg');
             errorMsg.style.display = 'none';
 
-            // El token ID de google
             const id_token = response.credential;
 
             fetch('/api/auth/google', {
@@ -67,7 +149,7 @@
         }
 
         window.onload = function () {
-            // El mismo Client ID que usamos para enviar correos
+            // El mismo Client ID de Google que ya usas
             const CLIENT_ID = '360557152471-b270feg6rv0nm39l04geqjkjlosbtv3n.apps.googleusercontent.com';
 
             google.accounts.id.initialize({
@@ -75,12 +157,20 @@
                 callback: handleCredentialResponse
             });
 
+            // Personalización estética del botón de Google
             google.accounts.id.renderButton(
                 document.getElementById("google-btn"),
-                { theme: "outline", size: "large", width: "100%" }
+                { 
+                    theme: "outline", 
+                    size: "large", 
+                    width: 320, 
+                    shape: "pill", // Botón redondeado muy moderno
+                    text: "continue_with",
+                    logo_alignment: "center"
+                }
             );
             
-            google.accounts.id.prompt(); // Muestra el One Tap dialog si está disponible
+            google.accounts.id.prompt(); // Mostrar pop-up One Tap
         };
     </script>
 </body>
