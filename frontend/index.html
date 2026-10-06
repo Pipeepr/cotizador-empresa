@@ -562,42 +562,59 @@
                 <!-- ═══════════════════════════════════════
              SECTION: HISTORIAL
              ═══════════════════════════════════════ -->
-                <div class="section" id="section-historial" role="tabpanel" aria-labelledby="tab-historial"
-                    aria-hidden="true">
-                    <div class="page-header"
-                        style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div>
-                            <h2>Historial de Cotizaciones</h2>
-                            <p>Revisa las últimas cotizaciones guardadas en el sistema</p>
+                <div class="section" id="section-historial" role="tabpanel" aria-labelledby="tab-historial" aria-hidden="true">
+                    <!-- Odoo Topbar -->
+                    <div class="odoo-topbar">
+                        <div class="odoo-topbar-left">
+                            <button class="odoo-btn-primary" onclick="nuevaCotizacionEnBlanco()">Nuevo</button>
+                            <span class="odoo-breadcrumb">Presupuestos</span>
                         </div>
-                        <button class="btn btn-primary" onclick="nuevaCotizacionEnBlanco()">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                class="icon-sm">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            Nueva Cotización
-                        </button>
+                        <div class="odoo-topbar-center">
+                            <div class="odoo-search-bar">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                <div class="odoo-search-chip">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                                    Mis presupuestos
+                                    <span class="close-chip">&times;</span>
+                                </div>
+                                <input type="text" placeholder="Buscar..." id="historial-search">
+                            </div>
+                        </div>
+                        <div class="odoo-topbar-right">
+                            <span class="odoo-pager" id="odoo-pager-text">0-0 / 0</span>
+                            <div class="odoo-pager-btns">
+                                <button>&lt;</button>
+                                <button>&gt;</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card">
-                        <div class="table-wrapper">
-                            <table aria-label="Historial de Cotizaciones">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Número</th>
-                                        <th scope="col">Fecha</th>
-                                        <th scope="col">Cliente / Empresa</th>
-                                        <th scope="col">Total</th>
-                                        <th scope="col">Estado</th>
-                                        <th scope="col" class="w-80">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabla-historial">
-                                    <!-- Filas dinámicas -->
-                                </tbody>
-                            </table>
-                        </div>
+
+                    <!-- Odoo Kanban States -->
+                    <div class="odoo-kanban-row" id="odoo-kanban-states">
+                        <!-- Generado desde JS -->
+                    </div>
+
+                    <!-- Odoo Table -->
+                    <div class="odoo-table-wrapper">
+                        <table class="odoo-table" aria-label="Historial de Cotizaciones">
+                            <thead>
+                                <tr>
+                                    <th scope="col" style="width: 30px;"><input type="checkbox"></th>
+                                    <th scope="col">Número</th>
+                                    <th scope="col">Fecha del pedido</th>
+                                    <th scope="col">Cliente</th>
+                                    <th scope="col">Total</th>
+                                    <th scope="col">Estado</th>
+                                    <th scope="col">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-historial">
+                                <!-- Filas dinámicas -->
+                            </tbody>
+                            <tfoot id="tabla-historial-foot">
+                                <!-- Totales -->
+                            </tfoot>
+                        </table>
                     </div>
                 </div>
             </main>

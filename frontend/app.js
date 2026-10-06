@@ -818,11 +818,10 @@ async function eliminarProducto(sku, nombre) {
     }
 }
 
+// ═══════════ HISTORIAL ═══════════
 async function cargarHistorial() {
     const tbody = document.getElementById('tabla-historial');
     if (!tbody) return;
-
-    tbody.innerHTML = renderSkeletonRows(5, 6);
 
     try {
         const res = await fetch(`${API}/cotizaciones`);
@@ -831,14 +830,50 @@ async function cargarHistorial() {
         const data = await res.json();
 
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>No hay cotizaciones registradas</p></div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay cotizaciones registradas</td></tr>';
             renderDashboard([]);
             return;
         }
         
         renderDashboard(data);
 
-        // Flujo de estados válidos
+        // Odoo Kanban states
+        let toConfirm = 0;
+        let toDeliver = 0;
+        let toInvoice = 0;
+        let totalGeneral = 0;
+
+        data.forEach(c => {
+            const e = c.estado || 'Borrador';
+            if (['Borrador', 'Enviada'].includes(e)) toConfirm++;
+            if (['Aprobada'].includes(e)) toDeliver++;
+            if (['Nota de Venta'].includes(e)) toInvoice++;
+            if (['Aprobada', 'Nota de Venta', 'Facturada', 'Completada'].includes(e)) {
+                totalGeneral += parseFloat(c.total) || 0;
+            }
+        });
+
+        const kanbanHTML = `
+            <div class="odoo-kanban-card bg-orange">
+                <div class="count">${toConfirm}</div>
+                <div class="label">To Confirm</div>
+            </div>
+            <div class="odoo-kanban-card bg-purple">
+                <div class="count">${toDeliver}</div>
+                <div class="label">To Deliver</div>
+            </div>
+            <div class="odoo-kanban-card bg-teal">
+                <div class="count">${toInvoice}</div>
+                <div class="label">A facturar</div>
+            </div>
+        `;
+        const kanbanEl = document.getElementById('odoo-kanban-states');
+        if(kanbanEl) kanbanEl.innerHTML = kanbanHTML;
+        
+        const pagerEl = document.getElementById('odoo-pager-text');
+        if(pagerEl) pagerEl.textContent = `1-${data.length} / ${data.length}`;
+
+        // Flujo de estados
         const estadoFlow = {
             'Borrador': ['Enviada', 'Cancelada'],
             'Enviada': ['Aprobada', 'Rechazada'],
@@ -851,59 +886,62 @@ async function cargarHistorial() {
         };
 
         tbody.innerHTML = data.map(c => {
-            const dateStr = new Date(c.fecha).toLocaleDateString();
+            const dateStr = new Date(c.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit' });
             const clientName = escapeHtml(c.cliente_empresa || c.cliente_nombre || 'N/A');
 
-            // Render de Badge
-            const badgeMap = {
-                'Borrador': 'badge-borrador', 'Enviada': 'badge-enviada',
-                'Aprobada': 'badge-aprobada', 'Nota de Venta': 'badge-nota',
-                'Facturada': 'badge-facturada', 'Completada': 'badge-completada',
-                'Rechazada': 'badge-cancelada', 'Cancelada': 'badge-cancelada',
-            };
             const estado = c.estado || 'Borrador';
-            const badgeClass = badgeMap[estado] || 'badge-borrador';
+            
+            let odooBadge = 'odoo-badge-gray';
+            if (['Aprobada', 'Completada', 'Facturada'].includes(estado)) odooBadge = 'odoo-badge-green';
+            if (['Enviada', 'Nota de Venta'].includes(estado)) odooBadge = 'odoo-badge-blue';
+            if (['Cancelada', 'Rechazada'].includes(estado)) odooBadge = 'odoo-badge-red';
 
-            // Botones de acción
+            const numStr = `S${String(c.id).padStart(5, '0')}`;
+
             let actionBtns = `<div style="display:flex; gap: 4px;">
-                <button class="btn btn-sm btn-ghost" onclick="verDetalleCotizacion(${c.id})" title="Ver Resumen">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <button class="btn btn-sm btn-ghost" onclick="verDetalleCotizacion(${c.id})" title="Ver Resumen" style="color:#9296a2;">
+                    ${Icons.info}
                 </button>
-                <button class="btn btn-sm btn-ghost" onclick="abrirDetalleCotizacion(${c.id})" title="Editar en Cotizador">
+                <button class="btn btn-sm btn-ghost" onclick="abrirDetalleCotizacion(${c.id})" title="Editar en Cotizador" style="color:#9296a2;">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
                 </button>
-                <button class="btn btn-sm btn-ghost" onclick="confirmarBorrarCotizacion(${c.id})" title="Eliminar" style="color:var(--danger)">
+                <button class="btn btn-sm btn-ghost" onclick="confirmarBorrarCotizacion(${c.id})" title="Eliminar" style="color:#ff7878;">
                     ${Icons.trash2}
                 </button>
             </div>`;
 
-            // Dropdown de cambio de estado
             const nextStates = estadoFlow[estado] || [];
             let estadoSelect = '';
             if (nextStates.length > 0) {
                 const options = nextStates.map(s => `<option value="${s}">${s}</option>`).join('');
-                estadoSelect = `<select class="form-control historial-estado-select" onchange="cambiarEstadoCotizacion(${c.id}, this.value, this)">
-                    <option value="" disabled selected>Avanzar →</option>
+                estadoSelect = `<select class="form-control" style="background:transparent; border:none; color:#c9ccd6; font-size:12px; margin-left:8px;" onchange="cambiarEstadoCotizacion(${c.id}, this.value, this)">
+                    <option value="" disabled selected>▾</option>
                     ${options}
                 </select>`;
             }
 
             return `
                 <tr>
-                    <td><strong>COT-${String(c.id).padStart(4, '0')}</strong></td>
+                    <td><input type="checkbox"></td>
+                    <td><strong>${numStr}</strong></td>
                     <td>${dateStr}</td>
-                    <td>${clientName}</td>
-                    <td>${formatCLP(c.total)}</td>
+                    <td><span style="color:#5bc49c; background:#0b4f3b; padding:2px 6px; border-radius:4px; font-size:11px;">${clientName.charAt(0)}</span> ${clientName}</td>
+                    <td style="font-weight:bold;">${formatCLP(c.total)}</td>
                     <td>
-                        <span class="badge-estado ${badgeClass}">${estado}</span>
+                        <span class="odoo-badge ${odooBadge}">${estado}</span>
                         ${estadoSelect}
                     </td>
                     <td>${actionBtns}</td>
                 </tr>
             `;
         }).join('');
+
+        const tfoot = document.getElementById('tabla-historial-foot');
+        if (tfoot) {
+            tfoot.innerHTML = `<tr><td colspan="4"></td><td colspan="3">${formatCLP(totalGeneral)}</td></tr>`;
+        }
     } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p style="color:var(--danger)">Error al cargar historial</p></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="color:#ff7878; text-align:center;">Error al cargar historial</td></tr>';
     }
 }
 
