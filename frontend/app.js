@@ -15,25 +15,25 @@ const API = window.location.hostname === 'localhost' || window.location.hostname
 // ═══════════ SVG ICON LIBRARY ═══════════
 // Using inline SVGs (Lucide-style) for cross-platform consistency
 const Icons = {
-    zap:         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
-    filePlus:    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>',
-    users:       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-    user:        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-    package:     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
-    receipt:     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></svg>',
+    zap: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+    filePlus: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>',
+    users: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    user: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    package: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
+    receipt: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></svg>',
     clipboardList: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>',
-    save:        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg>',
-    plus:        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>',
-    x:           '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
-    menu:        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>',
+    save: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg>',
+    plus: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>',
+    x: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+    menu: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>',
     checkCircle: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>',
     alertCircle: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>',
-    info:        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
-    search:      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
-    building:    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>',
-    mail:        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>',
-    trash2:      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>',
-    hash:        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg>',
+    info: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
+    search: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+    building: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>',
+    mail: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>',
+    trash2: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>',
+    hash: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg>',
 };
 
 // ═══════════ STATE ═══════════
@@ -93,8 +93,8 @@ function showToast(message, type = 'info') {
 
     const iconMap = {
         success: Icons.checkCircle,
-        error:   Icons.alertCircle,
-        info:    Icons.info,
+        error: Icons.alertCircle,
+        info: Icons.info,
     };
 
     toast.innerHTML = `<span>${iconMap[type] || iconMap.info}</span><span>${escapeHtml(message)}</span>`;
@@ -389,14 +389,14 @@ async function guardarCliente(event) {
         }
 
         const clienteGuardado = await res.json();
-        
+
         if (isEdit) {
             const index = clientes.findIndex(c => c.id == id);
-            if(index !== -1) clientes[index] = clienteGuardado;
+            if (index !== -1) clientes[index] = clienteGuardado;
         } else {
             clientes.push(clienteGuardado);
         }
-        
+
         renderSelectClientes();
         renderTablaClientes();
         renderStatsClientes();
@@ -459,32 +459,32 @@ function actualizarClienteDocs() {
     const clienteId = document.getElementById('select-cliente').value;
     const cliente = clientes.find(c => c.id == clienteId);
     if (!cliente) return;
-    
+
     document.getElementById('doc-client-name').textContent = cliente.empresa || cliente.nombre;
     document.getElementById('doc-client-contacto').textContent = "Atención a: " + (cliente.contacto || (cliente.empresa ? cliente.nombre : ""));
     document.getElementById('doc-client-email').textContent = "Email: " + (cliente.email || 'N/A');
     document.getElementById('doc-client-rut').textContent = "RUT: " + (cliente.rut || 'N/A');
     document.getElementById('doc-client-direccion').textContent = "Dirección: " + (cliente.direccion || 'No especificada');
-    
+
     const comunaCiudad = [cliente.comuna, cliente.ciudad].filter(Boolean).join(', ');
     const docComuna = document.getElementById('doc-client-comuna-ciudad');
     if (docComuna) docComuna.textContent = "Comuna/Ciudad: " + (comunaCiudad || 'No especificada');
-    
+
     const docGiro = document.getElementById('doc-client-giro');
     if (docGiro) docGiro.textContent = "Giro: " + (cliente.giro || 'No especificado');
 }
 
 function agregarLineaWysiwyg(sku = null, nombreOverride = null, precioOverride = null) {
     const tbody = document.getElementById('tabla-cotizacion');
-    
+
     // Quitar estado vacío
     if (tbody.querySelector('.empty-state')) {
         tbody.innerHTML = '';
     }
-    
+
     let nombre = nombreOverride || "Nuevo producto";
     let precio = precioOverride != null ? Number(precioOverride) : 0;
-    
+
     if (sku && !nombreOverride) {
         const prod = productos.find(p => p.codigo_sku === sku);
         if (prod) {
@@ -494,7 +494,7 @@ function agregarLineaWysiwyg(sku = null, nombreOverride = null, precioOverride =
         // Reset the select
         document.getElementById('select-producto').value = "";
     }
-    
+
     const tr = document.createElement('tr');
     tr.innerHTML = `
         <td style="text-align: left; width: 75px;">
@@ -502,7 +502,7 @@ function agregarLineaWysiwyg(sku = null, nombreOverride = null, precioOverride =
                 <button class="btn-remove print-hide" onclick="this.closest('tr').remove(); recalcularTotalesWysiwyg();" title="Eliminar" style="padding: 2px;">
                     ${Icons.x}
                 </button>
-                <input type="text" class="wysiwyg-input sku-input" placeholder="CÓD" value="${escapeHtml(sku || '')}" style="width: 100%; font-size: 11px; max-length: 10;">
+                <input type="text" class="wysiwyg-input sku-input" placeholder="CÓD" value="${escapeHtml(sku || '')}" onchange="buscarProductoWysiwyg(this)" style="width: 100%; font-size: 11px;" maxlength="10">
             </div>
         </td>
         <td style="text-align: left;">
@@ -522,12 +522,12 @@ function agregarLineaWysiwyg(sku = null, nombreOverride = null, precioOverride =
     // Auto-grow textarea on input and keydown
     const textarea = tr.querySelector('textarea.desc-input');
     if (textarea) {
-        const autoGrow = function(el) {
+        const autoGrow = function (el) {
             el.style.height = '22px';
             el.style.height = el.scrollHeight + 'px';
         };
-        textarea.addEventListener('input', function() { autoGrow(this); });
-        textarea.addEventListener('keydown', function(e) {
+        textarea.addEventListener('input', function () { autoGrow(this); });
+        textarea.addEventListener('keydown', function (e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 // Allow normal Enter for line breaks (don't prevent default)
                 setTimeout(() => autoGrow(this), 0);
@@ -539,27 +539,50 @@ function agregarLineaWysiwyg(sku = null, nombreOverride = null, precioOverride =
     recalcularTotalesWysiwyg();
 }
 
+function buscarProductoWysiwyg(inputElement) {
+    const sku = inputElement.value.trim();
+    if (!sku) return;
+
+    const prod = productos.find(p => p.codigo_sku === sku || (p.codigo_sku && p.codigo_sku.toLowerCase() === sku.toLowerCase()));
+    if (prod) {
+        const tr = inputElement.closest('tr');
+        const descInput = tr.querySelector('.desc-input');
+        const priceInput = tr.querySelector('.price-input');
+        
+        if (descInput) {
+            descInput.value = prod.nombre;
+            descInput.style.height = '22px';
+            descInput.style.height = descInput.scrollHeight + 'px';
+        }
+        if (priceInput) {
+            priceInput.dataset.raw = prod.precio_base;
+            priceInput.value = formatCLP(prod.precio_base);
+        }
+        recalcularTotalesWysiwyg();
+    }
+}
+
 function recalcularTotalesWysiwyg() {
     const tbody = document.getElementById('tabla-cotizacion');
     const rows = tbody.querySelectorAll('tr');
     let neto = 0;
-    
+
     rows.forEach(tr => {
         const qtyInput = tr.querySelector('.qty-input');
         const priceInput = tr.querySelector('.price-input');
         if (!qtyInput || !priceInput) return;
-        
+
         const qty = parseFloat(qtyInput.value) || 0;
         const price = parseFloat((priceInput.dataset.raw || priceInput.value).toString().replace(/[^0-9.-]/g, '')) || 0;
         const subtotal = qty * price;
         neto += subtotal;
-        
+
         tr.querySelector('.row-total').textContent = formatCLP(subtotal);
     });
-    
+
     const iva = neto * 0.19;
     const total = neto + iva;
-    
+
     document.getElementById('total-neto').textContent = formatCLP(neto);
     document.getElementById('total-iva').textContent = formatCLP(iva);
     document.getElementById('total-final').textContent = formatCLP(total);
@@ -573,7 +596,7 @@ async function guardarCotizacion() {
         showToast('Selecciona un cliente de la lista en el documento', 'error');
         return;
     }
-    
+
     const tbody = document.getElementById('tabla-cotizacion');
     const rows = tbody.querySelectorAll('tr');
     if (rows.length === 0 || tbody.querySelector('.empty-state')) {
@@ -583,20 +606,20 @@ async function guardarCotizacion() {
 
     const payloadLineas = [];
     let neto = 0;
-    
+
     rows.forEach((tr, index) => {
         const skuInput = tr.querySelector('.sku-input');
         const descInput = tr.querySelector('.desc-input');
         const qtyInput = tr.querySelector('.qty-input');
         const priceInput = tr.querySelector('.price-input');
-        
+
         if (!descInput) return;
-        
+
         const nombre = descInput.value || `Item ${index + 1}`;
         const sku_val = skuInput ? skuInput.value.trim() : '';
         const cantidad = parseFloat(qtyInput.value) || 1;
         const precio_venta = parseFloat((priceInput.dataset.raw || priceInput.value).toString().replace(/[^0-9.-]/g, '')) || 0;
-        
+
         payloadLineas.push({
             producto_sku: sku_val || null,
             nombre,
@@ -639,10 +662,10 @@ async function guardarCotizacion() {
         const data = await res.json();
         const savedId = data.id || window.currentCotizacionId;
         window.currentCotizacionId = savedId;
-        
+
         // Actualiza el numero de COT visualmente
         document.getElementById('doc-id').textContent = `COT-${String(savedId).padStart(4, '0')}`;
-        
+
         showToast(`Cotización #${savedId} ${isEdit ? 'actualizada' : 'guardada'}. Generando PDF...`, 'success');
 
         // Refrescar historial
@@ -711,7 +734,7 @@ async function eliminarCliente(id, nombre) {
             const data = await res.json();
             throw new Error(data.error || 'Error al eliminar');
         }
-        
+
         showToast('Cliente eliminado correctamente', 'success');
         await cargarClientes();
     } catch (err) {
@@ -722,7 +745,7 @@ async function eliminarCliente(id, nombre) {
 async function cargarHistorial() {
     const tbody = document.getElementById('tabla-historial');
     if (!tbody) return;
-    
+
     tbody.innerHTML = renderSkeletonRows(5, 6);
 
     try {
@@ -730,7 +753,7 @@ async function cargarHistorial() {
         if (res.status === 401) window.location.href = '/login';
         if (!res.ok) throw new Error('Error de red');
         const data = await res.json();
-        
+
         if (data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>No hay cotizaciones registradas</p></div></td></tr>';
             return;
@@ -751,7 +774,7 @@ async function cargarHistorial() {
         tbody.innerHTML = data.map(c => {
             const dateStr = new Date(c.fecha).toLocaleDateString();
             const clientName = escapeHtml(c.cliente_empresa || c.cliente_nombre || 'N/A');
-            
+
             // Render de Badge
             const badgeMap = {
                 'Borrador': 'badge-borrador', 'Enviada': 'badge-enviada',
@@ -878,16 +901,16 @@ function nuevaCotizacionEnBlanco() {
     window.currentCotizacionId = null;
     document.getElementById('tabla-cotizacion').innerHTML = '';
     document.getElementById('doc-id').textContent = `COT-0000`;
-    
+
     const d = new Date();
     const dd = String(d.getDate()).padStart(2, '0');
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     document.getElementById('doc-fecha').textContent = `${dd}/${mm}/${d.getFullYear()}`;
-    
+
     document.getElementById('select-cliente').value = '';
     actualizarClienteDocs();
     recalcularTotalesWysiwyg();
-    
+
     switchSection('cotizacion');
     showToast('Nueva cotización en blanco', 'success');
 }
@@ -898,14 +921,14 @@ async function abrirDetalleCotizacion(id, showEditor = true) {
         const res = await fetch(`${API}/cotizaciones/${id}`);
         if (!res.ok) throw new Error('Error fetching quote');
         const data = await res.json();
-        
+
         // 1. Limpiar editor
         document.getElementById('tabla-cotizacion').innerHTML = '';
-        
+
         // 2. Set ID global
         window.currentCotizacionId = id;
         document.getElementById('doc-id').textContent = `COT-${String(id).padStart(4, '0')}`;
-        
+
         // 3. Setear fecha
         if (data.fecha) {
             const d = new Date(data.fecha);
@@ -914,14 +937,14 @@ async function abrirDetalleCotizacion(id, showEditor = true) {
             const yyyy = d.getFullYear();
             document.getElementById('doc-fecha').textContent = `${dd}/${mm}/${yyyy}`;
         }
-        
+
         // 4. Setear cliente
         const selectCliente = document.getElementById('select-cliente');
         if (selectCliente.querySelector(`option[value="${data.cliente_id}"]`)) {
             selectCliente.value = data.cliente_id;
             actualizarClienteDocs();
         }
-        
+
         // 5. Agregar lineas
         data.detalles.forEach(d => {
             agregarLineaWysiwyg(d.producto_sku, d.nombre, d.precio_venta);
@@ -933,7 +956,7 @@ async function abrirDetalleCotizacion(id, showEditor = true) {
             }
         });
         recalcularTotalesWysiwyg();
-        
+
         // 6. Cambiar vista al editor (opcional)
         if (showEditor) {
             switchSection('cotizacion');
@@ -950,12 +973,12 @@ async function abrirDetalleCotizacion(id, showEditor = true) {
 // ═══════════ MODAL DETALLE (SOLO LECTURA) ═══════════
 const modalDetalle = {
     el: () => document.getElementById('modal-detalle'),
-    open: function() {
+    open: function () {
         const overlay = this.el();
         overlay.classList.add('open');
         overlay.setAttribute('aria-hidden', 'false');
     },
-    close: function() {
+    close: function () {
         const overlay = this.el();
         overlay.classList.remove('open');
         overlay.setAttribute('aria-hidden', 'true');
@@ -967,11 +990,11 @@ async function verDetalleCotizacion(id) {
         const res = await fetch(`${API}/cotizaciones/${id}`);
         if (!res.ok) throw new Error('Error fetching quote');
         const data = await res.json();
-        
+
         let subtotal = data.subtotal || 0;
         let iva = data.iva || 0;
         let total = data.total || 0;
-        
+
         let html = `
             <div style="display: flex; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
                 <div style="flex: 1; min-width: 200px; background: var(--bg-input); padding: 15px; border-radius: 8px;">
@@ -1023,9 +1046,9 @@ async function verDetalleCotizacion(id) {
                 </div>
             </div>
         `;
-        
+
         document.getElementById('modal-detalle-content').innerHTML = html;
-        
+
         // Asignar funciones a los botones
         document.getElementById('btn-detalle-editar').onclick = () => {
             modalDetalle.close();
@@ -1035,7 +1058,7 @@ async function verDetalleCotizacion(id) {
             modalDetalle.close();
             imprimirCotizacionDesdeHistorial(id);
         };
-        
+
         modalDetalle.open();
     } catch (err) {
         showToast('Error al cargar la cotización', 'error');
@@ -1075,7 +1098,7 @@ function abrirNuevoCliente() {
 // ----------- MODAL CORREO -----------
 const modalCorreo = {
     el: () => document.getElementById('modal-correo'),
-    open: function() {
+    open: function () {
         if (!window.currentCotizacionId) {
             showToast('Debe guardar la cotización primero', 'error');
             return;
@@ -1088,13 +1111,13 @@ const modalCorreo = {
                 document.getElementById('correo-destinatario').value = cliente.email;
             }
         }
-        
+
         const docIdText = document.getElementById('doc-id').textContent;
         document.getElementById('correo-asunto').value = docIdText + ' - Cotización TORNOMETAL S.P.A';
-        
-        const mensajeDefault = localStorage.getItem('correoMensajeDefault') || 'Estimado/a,\n\nAdjunto enviamos la cotización solicitada para su revisión.\n\nQuedamos atentos a cualquier consulta.\n\nSaludos cordiales,\nTORNOMETAL S.P.A';
+
+        const mensajeDefault = localStorage.getItem('correoMensajeDefault') || 'Estimado/a,\n\nEnviamos la cotización solicitada para su revisión.\n\nQuedamos atentos a cualquier consulta.\n\nSaludos cordiales,\nTORNOMETAL S.P.A';
         document.getElementById('correo-mensaje').value = mensajeDefault;
-        
+
         const overlay = this.el();
         overlay.classList.add('open');
         overlay.setAttribute('aria-hidden', 'false');
@@ -1102,7 +1125,7 @@ const modalCorreo = {
         const firstInput = overlay.querySelector('input');
         if (firstInput) setTimeout(() => firstInput.focus(), 100);
     },
-    close: function() {
+    close: function () {
         const overlay = this.el();
         overlay.classList.remove('open');
         overlay.setAttribute('aria-hidden', 'true');
@@ -1110,87 +1133,43 @@ const modalCorreo = {
     }
 };
 
-let googleTokenClient;
-
-function initGoogleAuth() {
-    if (typeof google === 'undefined') return;
-    googleTokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: '360557152471-b270feg6rv0nm39l04geqjkjlosbtv3n.apps.googleusercontent.com',
-        scope: 'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email',
-        callback: (tokenResponse) => {
-            if (tokenResponse && tokenResponse.access_token) {
-                // Fetch email
-                fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-                    headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
-                })
-                .then(r => r.json())
-                .then(info => {
-                    procesarEnvioCorreoBackend(tokenResponse.access_token, info.email);
-                })
-                .catch(err => {
-                    console.error("Error fetching user email", err);
-                    showToast('Error obteniendo correo de Google', 'error');
-                });
-            }
-        },
-    });
-}
-
-// Llama a initGoogleAuth cuando se carga la página (o cuando la API de google está lista)
-window.addEventListener('load', () => {
-    if (typeof google !== 'undefined') {
-        initGoogleAuth();
-    } else {
-        setTimeout(initGoogleAuth, 1500); // Dar un poco de tiempo si carga lento
-    }
-});
-
 async function enviarCorreoCotizacion(e) {
     e.preventDefault();
     if (!window.currentCotizacionId) return;
 
-    if (!googleTokenClient) {
-        showToast('Google API no cargada o falta configurar el Client ID en app.js', 'error');
-        return;
-    }
+    const destinatario = document.getElementById('correo-destinatario').value;
+    const asunto = document.getElementById('correo-asunto').value;
+    const mensaje = document.getElementById('correo-mensaje').value;
 
-    // Almacena variables temporalmente
-    window.tempCorreoData = {
-        destinatario: document.getElementById('correo-destinatario').value,
-        asunto: document.getElementById('correo-asunto').value,
-        mensaje: document.getElementById('correo-mensaje').value,
-        html: `<!DOCTYPE html>\n${document.documentElement.outerHTML}`
-    };
+    // Guardar el mensaje modificado como el nuevo mensaje por defecto en localStorage
+    localStorage.setItem('correoMensajeDefault', mensaje);
 
-    localStorage.setItem('correoMensajeDefault', window.tempCorreoData.mensaje);
-
-    // Enviar directamente al servidor para que use la cuenta central (App Password)
-    procesarEnvioCorreoBackend(null, null);
-}
-
-async function procesarEnvioCorreoBackend(token, email) {
-    showToast('Generando PDF y enviando correo vía Google, por favor espere...', 'info');
-
-    const { destinatario, asunto, mensaje, html } = window.tempCorreoData;
-
+    // Actualizar estado a "Enviada" en el backend
     try {
-        const res = await fetch(`${API}/cotizaciones/${window.currentCotizacionId}/enviar`, {
-            method: 'POST',
+        await fetch(`${API}/cotizaciones/${window.currentCotizacionId}/estado`, {
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ destinatario, asunto, mensaje, html, googleToken: token, googleEmail: email })
+            body: JSON.stringify({ estado: 'Enviada' })
         });
-
-        if (!res.ok) {
-            const errText = await res.text();
-            throw new Error(errText);
-        }
-
-        showToast('Correo enviado exitosamente con tu cuenta de Google', 'success');
         cargarHistorial();
-        modalCorreo.close();
     } catch (err) {
-        console.error("Error enviando correo", err);
-        showToast('Error al enviar el correo con Google.', 'error');
+        console.error("Error actualizando estado", err);
     }
+
+    // Abrir Gmail con los datos pre-llenados
+    showToast('Abriendo Gmail con el correo listo para enviar...', 'info');
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(destinatario)}&su=${encodeURIComponent(asunto)}&body=${encodeURIComponent(mensaje + '\n\n---\nRecuerda adjuntar el PDF de la cotización.')}`;
+    window.open(gmailUrl, '_blank');
+
+    // Generar PDF para que descarguen/impriman
+    setTimeout(() => {
+        const ot = document.title;
+        const docId = document.getElementById('doc-id').textContent;
+        document.title = `N°COTIZACION ${docId}`;
+        window.print();
+        setTimeout(() => document.title = ot, 1000);
+    }, 800);
+
+    modalCorreo.close();
 }
 
