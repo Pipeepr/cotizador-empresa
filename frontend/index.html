@@ -64,8 +64,20 @@
                     <p>Sistema de Cotización</p>
                 </div>
                 <nav class="sidebar-nav" role="tablist" aria-label="Secciones">
-                    <button class="nav-item active" data-section="cotizacion" onclick="nuevaCotizacionEnBlanco()"
-                        role="tab" aria-selected="true" aria-controls="section-cotizacion" id="tab-cotizacion">
+                    <button class="nav-item active" data-section="dashboard" onclick="switchSection('dashboard')"
+                        role="tab" aria-selected="true" aria-controls="section-dashboard" id="tab-dashboard">
+                        <span class="nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="3" y1="9" x2="21" y2="9"></line>
+                                <line x1="9" y1="21" x2="9" y2="9"></line>
+                            </svg>
+                        </span>
+                        <span>Tablero</span>
+                    </button>
+                    <button class="nav-item" data-section="cotizacion" onclick="nuevaCotizacionEnBlanco()"
+                        role="tab" aria-selected="false" aria-controls="section-cotizacion" id="tab-cotizacion">
                         <span class="nav-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -89,6 +101,19 @@
                             </svg>
                         </span>
                         <span>Clientes</span>
+                    </button>
+                    <button class="nav-item" data-section="productos" onclick="switchSection('productos')" role="tab"
+                        aria-selected="false" aria-controls="section-productos" id="tab-productos">
+                        <span class="nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m7.5 4.27 9 5.15"/>
+                                <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                                <path d="m3.3 7 8.7 5 8.7-5"/>
+                                <path d="M12 22V12"/>
+                            </svg>
+                        </span>
+                        <span>Productos</span>
                     </button>
                     <button class="nav-item" data-section="historial" onclick="switchSection('historial')" role="tab"
                         aria-selected="false" aria-controls="section-historial" id="tab-historial">
@@ -117,10 +142,120 @@
             <main class="main-content">
 
                 <!-- ═══════════════════════════════════════
+             SECTION: DASHBOARD (TABLERO)
+             ═══════════════════════════════════════ -->
+                <div class="section active" id="section-dashboard" role="tabpanel" aria-labelledby="tab-dashboard"
+                    aria-hidden="false">
+                    <div class="page-header">
+                        <h2>Tablero de Ventas</h2>
+                        <p>Resumen general y estadísticas de tu negocio</p>
+                    </div>
+
+                    <div class="stats-row" id="dashboard-stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="dash-ventas-totales">$0</div>
+                            <div class="stat-label">Ventas Totales (Completadas)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="dash-cotizaciones-mes">0</div>
+                            <div class="stat-label">Cotizaciones este mes</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="dash-tasa-conversion">0%</div>
+                            <div class="stat-label">Tasa de Conversión (Aprobadas)</div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-20">
+                        <div class="card-title mb-0">Últimas Cotizaciones</div>
+                        <div class="table-wrapper">
+                            <table aria-label="Últimas Cotizaciones">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Número</th>
+                                        <th scope="col">Fecha</th>
+                                        <th scope="col">Cliente</th>
+                                        <th scope="col">Total</th>
+                                        <th scope="col">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-dash-ultimas">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════
+             SECTION: PRODUCTOS
+             ═══════════════════════════════════════ -->
+                <div class="section" id="section-productos" role="tabpanel" aria-labelledby="tab-productos"
+                    aria-hidden="true">
+                    <div class="page-header">
+                        <h2>Catálogo de Productos</h2>
+                        <p>Gestiona los productos y precios base de tu empresa</p>
+                    </div>
+
+                    <div class="stats-row" id="productos-stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-total-productos">0</div>
+                            <div class="stat-label">Total Productos</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="action-bar">
+                            <div class="card-title mb-0">
+                                Listado de Productos
+                                <span class="badge badge-info" id="badge-productos">0</span>
+                            </div>
+
+                            <div class="search-wrapper">
+                                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <path d="m21 21-4.3-4.3" />
+                                </svg>
+                                <input type="text" class="form-control" id="search-productos"
+                                    placeholder="Buscar productos..."
+                                    oninput="onSearchProductos(event)" />
+                            </div>
+
+                            <button class="btn btn-primary" onclick="abrirModalNuevoProducto()">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                    class="icon-sm">
+                                    <path d="M5 12h14" />
+                                    <path d="M12 5v14" />
+                                </svg>
+                                Nuevo Producto
+                            </button>
+                        </div>
+
+                        <div class="table-wrapper">
+                            <table aria-label="Listado de productos">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Código SKU</th>
+                                        <th scope="col">Nombre / Descripción</th>
+                                        <th scope="col">Precio Base</th>
+                                        <th scope="col">Stock</th>
+                                        <th scope="col">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-listado-productos">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════
              SECTION: NUEVA COTIZACIÓN
              ═══════════════════════════════════════ -->
-                <div class="section active" id="section-cotizacion" role="tabpanel" aria-labelledby="tab-cotizacion"
-                    aria-hidden="false">
+                <div class="section" id="section-cotizacion" role="tabpanel" aria-labelledby="tab-cotizacion"
+                    aria-hidden="true">
 
                     <div class="page-header">
                         <h2>Nueva Cotización</h2>
@@ -132,7 +267,7 @@
                             onchange="agregarLineaWysiwyg(this.value)">
                             <option value="" disabled selected>+ Añadir desde base de datos</option>
                         </select>
-                        <button class="btn btn-outline btn-outline-dark" onclick="modalProducto.open()"
+                        <button class="btn btn-outline btn-outline-dark" onclick="abrirModalNuevoProducto()"
                             id="btn-create-producto">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"

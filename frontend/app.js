@@ -43,6 +43,9 @@ let lineas = [];
 let isLoadingClientes = false;
 let isLoadingProductos = false;
 let searchClienteQuery = '';
+let searchProductoQuery = '';
+let isEditingProduct = false;
+let originalSku = '';
 
 // ═══════════ UTILITY: Escape HTML (XSS Prevention) ═══════════
 function escapeHtml(str) {
@@ -166,6 +169,8 @@ async function cargarProductos() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         productos = await res.json();
         renderSelectProductos();
+        renderTablaProductos();
+        renderStatsProductos();
     } catch (e) {
         showToast('Error al cargar productos', 'error');
     } finally {
@@ -343,9 +348,35 @@ const modalProducto = {
         overlay.classList.remove('open');
         overlay.setAttribute('aria-hidden', 'true');
         document.getElementById('form-producto').reset();
+        document.getElementById('prod-codigo').readOnly = false;
         document.body.style.overflow = '';
+        isEditingProduct = false;
+        originalSku = '';
     }
 };
+
+function abrirModalNuevoProducto() {
+    document.getElementById('modal-producto-title').innerHTML = `${Icons.package} Nuevo Producto`;
+    isEditingProduct = false;
+    originalSku = '';
+    modalProducto.open();
+}
+
+function abrirEditarProducto(sku) {
+    const prod = productos.find(p => p.codigo_sku === sku);
+    if (!prod) return;
+    
+    document.getElementById('modal-producto-title').innerHTML = `${Icons.package} Editar Producto`;
+    document.getElementById('prod-codigo').value = prod.codigo_sku;
+    document.getElementById('prod-codigo').readOnly = true; // SKU can't be changed
+    document.getElementById('prod-nombre').value = prod.nombre;
+    document.getElementById('prod-precio').value = prod.precio_base;
+    document.getElementById('prod-stock').value = prod.stock || 0;
+    
+    isEditingProduct = true;
+    originalSku = prod.codigo_sku;
+    modalProducto.open();
+}
 
 // ═══════════ GUARDAR CLIENTE ═══════════
 async function guardarCliente(event) {
@@ -430,8 +461,11 @@ async function guardarProducto(event) {
     btn.innerHTML = `<span class="spinner"></span> Guardando...`;
 
     try {
-        const res = await fetch(`${API}/productos`, {
-            method: 'POST',
+        const url = isEditingProduct ? `${API}/productos/${originalSku}` : `${API}/productos`;
+        const method = isEditingProduct ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+            method: method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ codigo_sku, nombre, precio_base, stock }),
         });
@@ -442,10 +476,20 @@ async function guardarProducto(event) {
         }
 
         const nuevoProducto = await res.json();
-        productos.push(nuevoProducto);
+        
+        if (isEditingProduct) {
+            const index = productos.findIndex(p => p.codigo_sku === originalSku);
+            if (index !== -1) productos[index] = nuevoProducto;
+            showToast(`Producto "${escapeHtml(nombre)}" actualizado exitosamente`, 'success');
+        } else {
+            productos.push(nuevoProducto);
+            showToast(`Producto "${escapeHtml(nombre)}" creado exitosamente`, 'success');
+        }
+        
         renderSelectProductos();
+        renderTablaProductos();
+        renderStatsProductos();
         modalProducto.close();
-        showToast(`Producto "${escapeHtml(nombre)}" creado exitosamente`, 'success');
     } catch (err) {
         showToast('Error al guardar el producto. ¿Código duplicado?', 'error');
     } finally {
@@ -657,7 +701,10 @@ async function guardarCotizacion() {
             body: JSON.stringify(payload),
         });
 
-        if (!res.ok) throw new Error('Error al guardar');
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error(text);
+        }
 
         const data = await res.json();
         const savedId = data.id || window.currentCotizacionId;
@@ -681,7 +728,14 @@ async function guardarCotizacion() {
         }, 500);
 
     } catch (err) {
-        showToast('Error al guardar la cotización', 'error');
+        let msg = 'Error al guardar la cotización';
+        try {
+            const parsed = JSON.parse(err.message);
+            msg = parsed.error || parsed.message || msg;
+        } catch(e) {
+            msg = err.message;
+        }
+        showToast(msg, 'error');
     } finally {
         btn.disabled = false;
         btn.innerHTML = originalHTML;
@@ -719,7 +773,6 @@ document.addEventListener('click', (e) => {
     if (e.target.id === 'modal-detalle') modalDetalle.close();
 });
 
-// ═══════════ ELIMINAR CLIENTE ═══════════
 async function eliminarCliente(id, nombre) {
     const confirm = await modalConfirm.show(`¿Estás seguro de que deseas eliminar a ${nombre}? Esta acción no se puede deshacer.`);
     if (!confirm) return;
@@ -742,6 +795,29 @@ async function eliminarCliente(id, nombre) {
     }
 }
 
+// ═══════════ ELIMINAR PRODUCTO ═══════════
+async function eliminarProducto(sku, nombre) {
+    const confirm = await modalConfirm.show(`¿Estás seguro de eliminar el producto ${nombre}?`);
+    if (!confirm) return;
+
+    try {
+        const res = await fetch(`${API}/productos/${sku}`, { method: 'DELETE' });
+        if (res.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || 'Error al eliminar');
+        }
+
+        showToast('Producto eliminado correctamente', 'success');
+        await cargarProductos();
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+}
+
 async function cargarHistorial() {
     const tbody = document.getElementById('tabla-historial');
     if (!tbody) return;
@@ -756,8 +832,11 @@ async function cargarHistorial() {
 
         if (data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>No hay cotizaciones registradas</p></div></td></tr>';
+            renderDashboard([]);
             return;
         }
+        
+        renderDashboard(data);
 
         // Flujo de estados válidos
         const estadoFlow = {
@@ -1173,3 +1252,126 @@ async function enviarCorreoCotizacion(e) {
     modalCorreo.close();
 }
 
+// ----------- RENDER: TABLE PRODUCTOS -----------
+function renderTablaProductos() {
+    const tbody = document.getElementById('tabla-listado-productos');
+    if (!tbody) return;
+
+    const filtered = searchProductoQuery
+        ? productos.filter(p => {
+            const q = searchProductoQuery.toLowerCase();
+            return (p.nombre && p.nombre.toLowerCase().includes(q))
+                || (p.codigo_sku && p.codigo_sku.toLowerCase().includes(q));
+        })
+        : productos;
+
+    if (filtered.length === 0) {
+        const msg = searchProductoQuery
+            ? \No se encontraron productos para "\"\
+            : 'No hay productos registrados';
+        tbody.innerHTML = \<tr><td colspan="5">
+            <div class="empty-state">
+                <div class="empty-icon">\</div>
+                <p>\</p>
+            </div>
+        </td></tr>\;
+        document.getElementById('badge-productos').textContent = '0';
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(p => \
+        <tr>
+            <td><span class="badge badge-info">\</span></td>
+            <td><strong>\</strong></td>
+            <td>\</td>
+            <td>\</td>
+            <td>
+                <div style="display:flex; gap: 8px;">
+                    <button type="button" class="btn btn-sm" style="background-color: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px;" onclick="abrirEditarProducto('\')">
+                        Editar
+                    </button>
+                    <button type="button" class="btn btn-sm" style="background-color: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 6px;" onclick="eliminarProducto('\', '\')">
+                        Borrar
+                    </button>
+                </div>
+            </td>
+        </tr>
+    \).join('');
+
+    document.getElementById('badge-productos').textContent = filtered.length;
+}
+
+function onSearchProductos(e) {
+    searchProductoQuery = e.target.value;
+    renderTablaProductos();
+}
+
+function renderStatsProductos() {
+    const totalEl = document.getElementById('stat-total-productos');
+    if (totalEl) totalEl.textContent = productos.length;
+}
+
+// ----------- RENDER: DASHBOARD -----------
+function renderDashboard(data) {
+    // Calcular estad�sticas
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    
+    let totalVentas = 0;
+    let cotizacionesMes = 0;
+    let aprobadas = 0;
+
+    data.forEach(c => {
+        const d = new Date(c.fecha);
+        if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+            cotizacionesMes++;
+        }
+        if (c.estado === 'Completada' || c.estado === 'Facturada') {
+            totalVentas += parseFloat(c.total) || 0;
+        }
+        if (['Aprobada', 'Nota de Venta', 'Facturada', 'Completada'].includes(c.estado)) {
+            aprobadas++;
+        }
+    });
+
+    const tasa = data.length > 0 ? Math.round((aprobadas / data.length) * 100) : 0;
+
+    const elVentas = document.getElementById('dash-ventas-totales');
+    const elCotMes = document.getElementById('dash-cotizaciones-mes');
+    const elTasa = document.getElementById('dash-tasa-conversion');
+
+    if (elVentas) elVentas.textContent = formatCLP(totalVentas);
+    if (elCotMes) elCotMes.textContent = cotizacionesMes;
+    if (elTasa) elTasa.textContent = tasa + '%';
+
+    // �ltimas 5
+    const tbody = document.getElementById('tabla-dash-ultimas');
+    if (!tbody) return;
+
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay datos recientes</td></tr>';
+        return;
+    }
+
+    const ultimas = data.slice(0, 5);
+    const badgeMap = {
+        'Borrador': 'badge-borrador', 'Enviada': 'badge-enviada',
+        'Aprobada': 'badge-aprobada', 'Nota de Venta': 'badge-nota',
+        'Facturada': 'badge-facturada', 'Completada': 'badge-completada',
+        'Rechazada': 'badge-cancelada', 'Cancelada': 'badge-cancelada',
+    };
+
+    tbody.innerHTML = ultimas.map(c => {
+        const estado = c.estado || 'Borrador';
+        const badgeClass = badgeMap[estado] || 'badge-borrador';
+        return \
+            <tr>
+                <td>COT-\</td>
+                <td>\</td>
+                <td>\</td>
+                <td>\</td>
+                <td><span class="badge-estado \">\</span></td>
+            </tr>
+        \;
+    }).join('');
+}

@@ -241,6 +241,35 @@ app.post('/productos', requireAuth, async (req, res) => {
   }
 });
 
+// 4.5 ACTUALIZAR un producto
+app.put('/productos/:codigo_sku', requireAuth, async (req, res) => {
+  const { codigo_sku } = req.params;
+  const { nombre, precio_base, stock } = req.body;
+  try {
+    const result = await pool.query(
+      'UPDATE productos SET nombre = $1, precio_base = $2, stock = $3 WHERE codigo_sku = $4 RETURNING *',
+      [nombre, precio_base, stock, codigo_sku]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).send('Error al actualizar producto');
+  }
+});
+
+// 4.6 ELIMINAR un producto
+app.delete('/productos/:codigo_sku', requireAuth, async (req, res) => {
+  const { codigo_sku } = req.params;
+  try {
+    await pool.query('DELETE FROM productos WHERE codigo_sku = $1', [codigo_sku]);
+    res.json({ success: true });
+  } catch (err) {
+    if (err.code === '23503') {
+       return res.status(400).json({ error: 'No se puede eliminar este producto porque está en uso en cotizaciones.' });
+    }
+    res.status(500).send('Error al eliminar producto');
+  }
+});
+
 // 5. CREAR cotización (Cabecera + Detalles)
 app.post('/cotizaciones', requireAuth, async (req, res) => {
   const { cliente_id, subtotal, iva, total, detalles } = req.body;
@@ -285,10 +314,9 @@ app.put('/cotizaciones/:id', requireAuth, async (req, res) => {
   try {
     await client.query('BEGIN');
     
-    // Check if it exists and is Borrador
+    // Check if it exists
     const checkRes = await client.query('SELECT estado FROM cotizaciones WHERE id = $1', [id]);
     if (checkRes.rows.length === 0) throw new Error('Cotización no encontrada');
-    if (checkRes.rows[0].estado !== 'Borrador') throw new Error('Solo se pueden editar cotizaciones en Borrador');
 
     await client.query(
       'UPDATE cotizaciones SET cliente_id = $1, subtotal = $2, iva = $3, total = $4, fecha = CURRENT_TIMESTAMP WHERE id = $5',
