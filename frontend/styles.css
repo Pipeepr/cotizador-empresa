@@ -2,11 +2,11 @@
    DESIGN SYSTEM – CSS Custom Properties
    ═══════════════════════════════════════════ */
 :root {
-    --bg-base: #f3f4f6;
-    --bg-surface: #ffffff;
-    --bg-card: #ffffff;
-    --bg-card-hover: #f9fafb;
-    --bg-input: #ffffff;
+    --bg-base: #e2e8f0;
+    --bg-surface: #f1f5f9;
+    --bg-card: #f1f5f9;
+    --bg-card-hover: #e2e8f0;
+    --bg-input: #f8fafc;
     --border-subtle: #e5e7eb;
     --border-accent: #1e3a8a;
     --accent-start: #1e3a8a;
@@ -1746,7 +1746,7 @@ textarea.wysiwyg-input.desc-input:focus {
 
 /* ═══════════ ODOO STYLE HISTORIAL ═══════════ */
 #section-historial {
-    background-color: #ffffff !important;
+    background-color: #f1f5f9 !important;
     color: #111827 !important;
     padding: 0 !important;
     margin: -24px !important;
@@ -1758,8 +1758,8 @@ textarea.wysiwyg-input.desc-input:focus {
     justify-content: space-between;
     align-items: center;
     padding: 12px 16px;
-    border-bottom: 1px solid #e5e7eb;
-    background-color: #ffffff;
+    border-bottom: 1px solid #d1d5db;
+    background-color: #f1f5f9;
 }
 
 .odoo-topbar-left {
@@ -1793,7 +1793,7 @@ textarea.wysiwyg-input.desc-input:focus {
 }
 
 .odoo-search-bar {
-    background-color: #f3f4f6;
+    background-color: #e2e8f0;
     border-radius: 20px;
     padding: 4px 12px;
     display: flex;
@@ -1823,9 +1823,9 @@ textarea.wysiwyg-input.desc-input:focus {
 }
 .odoo-pager-btns { display: flex; gap: 2px; }
 .odoo-pager-btns button {
-    background-color: #f3f4f6;
+    background-color: #e2e8f0;
     color: #6b7280;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #cbd5e1;
     padding: 4px 8px;
     border-radius: 2px;
     cursor: pointer;
@@ -1862,15 +1862,15 @@ textarea.wysiwyg-input.desc-input:focus {
 .odoo-table th {
     text-align: left;
     padding: 8px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #cbd5e1;
     color: #4b5563;
     font-weight: 600;
 }
 .odoo-table td {
     padding: 10px 8px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #cbd5e1;
 }
-.odoo-table tbody tr:hover { background-color: #f9fafb; }
+.odoo-table tbody tr:hover { background-color: #e2e8f0; }
 
 .odoo-badge {
     padding: 2px 8px;

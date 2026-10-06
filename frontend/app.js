@@ -866,6 +866,10 @@ async function cargarHistorial() {
                 <div class="count">${toInvoice}</div>
                 <div class="label">A Facturar</div>
             </div>
+            <div class="odoo-kanban-card" style="background-color: var(--accent-start); color: white;">
+                <div class="count">${formatCLP(totalGeneral)}</div>
+                <div class="label">Ventas Aprobadas</div>
+            </div>
         `;
         const kanbanEl = document.getElementById('odoo-kanban-states');
         if(kanbanEl) kanbanEl.innerHTML = kanbanHTML;

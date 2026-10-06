@@ -420,7 +420,7 @@ app.post('/cotizaciones/:id/enviar', requireAuth, async (req, res) => {
     // 1. Generar PDF con Puppeteer
     browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.setContent(html, { waitUntil: 'load', timeout: 15000 });
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
     
     // 2. Configurar Nodemailer
