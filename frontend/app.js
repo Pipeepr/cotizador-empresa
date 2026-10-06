@@ -1318,30 +1318,31 @@ function renderDashboard(data) {
     const currentYear = new Date().getFullYear();
     
     let totalVentas = 0;
-    let cotizacionesMes = 0;
+    let ventasMes = 0;
     let aprobadas = 0;
 
     data.forEach(c => {
         const d = new Date(c.fecha);
-        if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-            cotizacionesMes++;
-        }
-        if (c.estado === 'Completada' || c.estado === 'Facturada' || c.estado === 'Aprobada' || c.estado === 'Nota de Venta') {
-            totalVentas += parseFloat(c.total) || 0;
-        }
-        if (['Aprobada', 'Nota de Venta', 'Facturada', 'Completada'].includes(c.estado)) {
+        const isCurrentMonth = d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        const isAprobada = ['Aprobada', 'Nota de Venta', 'Facturada', 'Completada'].includes(c.estado);
+
+        if (isAprobada) {
             aprobadas++;
+            totalVentas += parseFloat(c.total) || 0;
+            if (isCurrentMonth) {
+                ventasMes += parseFloat(c.total) || 0;
+            }
         }
     });
 
     const tasa = data.length > 0 ? Math.round((aprobadas / data.length) * 100) : 0;
 
-    const elVentas = document.getElementById('dash-ventas-totales');
-    const elCotMes = document.getElementById('dash-cotizaciones-mes');
+    const elVentasTotales = document.getElementById('dash-ventas-totales');
+    const elVentasMes = document.getElementById('dash-ventas-mes');
     const elTasa = document.getElementById('dash-tasa-conversion');
 
-    if (elVentas) elVentas.textContent = formatCLP(totalVentas);
-    if (elCotMes) elCotMes.textContent = cotizacionesMes;
+    if (elVentasTotales) elVentasTotales.textContent = formatCLP(totalVentas);
+    if (elVentasMes) elVentasMes.textContent = formatCLP(ventasMes);
     if (elTasa) elTasa.textContent = tasa + '%';
 
     // Últimas 5
