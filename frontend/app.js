@@ -873,7 +873,7 @@ async function cargarHistorial() {
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
                 </button>
                 <button class="btn btn-sm btn-ghost" onclick="confirmarBorrarCotizacion(${c.id})" title="Eliminar" style="color:var(--danger)">
-                    ${Icons.trash}
+                    ${Icons.trash2}
                 </button>
             </div>`;
 
@@ -1326,7 +1326,7 @@ function renderDashboard(data) {
         if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
             cotizacionesMes++;
         }
-        if (c.estado === 'Completada' || c.estado === 'Facturada') {
+        if (c.estado === 'Completada' || c.estado === 'Facturada' || c.estado === 'Aprobada' || c.estado === 'Nota de Venta') {
             totalVentas += parseFloat(c.total) || 0;
         }
         if (['Aprobada', 'Nota de Venta', 'Facturada', 'Completada'].includes(c.estado)) {
@@ -1353,7 +1353,7 @@ function renderDashboard(data) {
         return;
     }
 
-    const ultimas = data.slice(0, 5);
+    const ultimas = data.slice(0, 10);
     const badgeMap = {
         'Borrador': 'badge-borrador', 'Enviada': 'badge-enviada',
         'Aprobada': 'badge-aprobada', 'Nota de Venta': 'badge-nota',
