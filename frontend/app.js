@@ -1252,7 +1252,7 @@ async function enviarCorreoCotizacion(e) {
     modalCorreo.close();
 }
 
-// ----------- RENDER: TABLE PRODUCTOS -----------
+// ═══════════ RENDER: TABLE PRODUCTOS ═══════════
 function renderTablaProductos() {
     const tbody = document.getElementById('tabla-listado-productos');
     if (!tbody) return;
@@ -1267,36 +1267,36 @@ function renderTablaProductos() {
 
     if (filtered.length === 0) {
         const msg = searchProductoQuery
-            ? \No se encontraron productos para "\"\
+            ? `No se encontraron productos para "${escapeHtml(searchProductoQuery)}"`
             : 'No hay productos registrados';
-        tbody.innerHTML = \<tr><td colspan="5">
+        tbody.innerHTML = `<tr><td colspan="5">
             <div class="empty-state">
-                <div class="empty-icon">\</div>
-                <p>\</p>
+                <div class="empty-icon">${Icons.package}</div>
+                <p>${msg}</p>
             </div>
-        </td></tr>\;
+        </td></tr>`;
         document.getElementById('badge-productos').textContent = '0';
         return;
     }
 
-    tbody.innerHTML = filtered.map(p => \
+    tbody.innerHTML = filtered.map(p => `
         <tr>
-            <td><span class="badge badge-info">\</span></td>
-            <td><strong>\</strong></td>
-            <td>\</td>
-            <td>\</td>
+            <td><span class="badge badge-info">${escapeHtml(p.codigo_sku)}</span></td>
+            <td><strong>${escapeHtml(p.nombre)}</strong></td>
+            <td>${formatCLP(p.precio_base)}</td>
+            <td>${p.stock || 0}</td>
             <td>
                 <div style="display:flex; gap: 8px;">
-                    <button type="button" class="btn btn-sm" style="background-color: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px;" onclick="abrirEditarProducto('\')">
+                    <button type="button" class="btn btn-sm" style="background-color: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px;" onclick="abrirEditarProducto('${escapeHtml(p.codigo_sku)}')">
                         Editar
                     </button>
-                    <button type="button" class="btn btn-sm" style="background-color: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 6px;" onclick="eliminarProducto('\', '\')">
+                    <button type="button" class="btn btn-sm" style="background-color: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 6px;" onclick="eliminarProducto('${escapeHtml(p.codigo_sku)}', '${escapeHtml(p.nombre)}')">
                         Borrar
                     </button>
                 </div>
             </td>
         </tr>
-    \).join('');
+    `).join('');
 
     document.getElementById('badge-productos').textContent = filtered.length;
 }
@@ -1311,9 +1311,9 @@ function renderStatsProductos() {
     if (totalEl) totalEl.textContent = productos.length;
 }
 
-// ----------- RENDER: DASHBOARD -----------
+// ═══════════ RENDER: DASHBOARD ═══════════
 function renderDashboard(data) {
-    // Calcular estad�sticas
+    // Calcular estadísticas
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
     
@@ -1344,7 +1344,7 @@ function renderDashboard(data) {
     if (elCotMes) elCotMes.textContent = cotizacionesMes;
     if (elTasa) elTasa.textContent = tasa + '%';
 
-    // �ltimas 5
+    // Últimas 5
     const tbody = document.getElementById('tabla-dash-ultimas');
     if (!tbody) return;
 
@@ -1364,14 +1364,14 @@ function renderDashboard(data) {
     tbody.innerHTML = ultimas.map(c => {
         const estado = c.estado || 'Borrador';
         const badgeClass = badgeMap[estado] || 'badge-borrador';
-        return \
+        return `
             <tr>
-                <td>COT-\</td>
-                <td>\</td>
-                <td>\</td>
-                <td>\</td>
-                <td><span class="badge-estado \">\</span></td>
+                <td>COT-${String(c.id).padStart(4, '0')}</td>
+                <td>${new Date(c.fecha).toLocaleDateString()}</td>
+                <td>${escapeHtml(c.cliente_empresa || c.cliente_nombre || 'N/A')}</td>
+                <td>${formatCLP(c.total)}</td>
+                <td><span class="badge-estado ${badgeClass}">${estado}</span></td>
             </tr>
-        \;
+        `;
     }).join('');
 }
