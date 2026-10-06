@@ -1261,33 +1261,67 @@ async function enviarCorreoCotizacion(e) {
     // Guardar el mensaje modificado como el nuevo mensaje por defecto en localStorage
     localStorage.setItem('correoMensajeDefault', mensaje);
 
-    // Actualizar estado a "Enviada" en el backend
+    const btn = document.getElementById('btn-enviar-correo');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Enviando...';
+    btn.disabled = true;
+
+    // Construir HTML para el PDF
+    const baseHtml = document.getElementById('hoja-cotizacion').outerHTML;
+    const fullHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        body { font-family: 'Inter', sans-serif; padding: 20px; color: #111827; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .text-right { text-align: right; }
+        .tabla-cotizacion { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .tabla-cotizacion th, .tabla-cotizacion td { border: 1px solid #d1d5db; padding: 10px; }
+        .tabla-cotizacion th { background-color: #f3f4f6; text-align: left; }
+        .resumen-totales { float: right; width: 300px; margin-top: 20px; }
+        .totales-row { display: flex; justify-content: space-between; padding: 8px 0; }
+        .totales-row.total-final { font-size: 18px; font-weight: bold; border-top: 2px solid #1e3a8a; }
+      </style>
+    </head>
+    <body>
+      ${baseHtml}
+    </body>
+    </html>
+    `;
+
     try {
-        await fetch(`${API}/cotizaciones/${window.currentCotizacionId}/estado`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ estado: 'Enviada' })
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API}/cotizaciones/${window.currentCotizacionId}/enviar`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({
+                destinatario,
+                asunto,
+                mensaje,
+                html: fullHtml
+            })
         });
-        cargarHistorial();
+
+        if (res.ok) {
+            showToast('Correo enviado exitosamente con PDF adjunto', 'success');
+            cargarHistorial();
+            modalCorreo.close();
+        } else {
+            const errText = await res.text();
+            throw new Error(errText || 'Error del servidor al enviar');
+        }
     } catch (err) {
-        console.error("Error actualizando estado", err);
+        console.error(err);
+        showToast('Error al enviar. Asegúrese de que el servidor tenga configurado el SMTP (SMTP_USER).', 'error');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
-
-    // Abrir Gmail con los datos pre-llenados
-    showToast('Abriendo Gmail con el correo listo para enviar...', 'info');
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(destinatario)}&su=${encodeURIComponent(asunto)}&body=${encodeURIComponent(mensaje + '\n\n---\nRecuerda adjuntar el PDF de la cotización.')}`;
-    window.open(gmailUrl, '_blank');
-
-    // Generar PDF para que descarguen/impriman
-    setTimeout(() => {
-        const ot = document.title;
-        const docId = document.getElementById('doc-id').textContent;
-        document.title = `N°COTIZACION ${docId}`;
-        window.print();
-        setTimeout(() => document.title = ot, 1000);
-    }, 800);
-
-    modalCorreo.close();
 }
 
 // ═══════════ RENDER: TABLE PRODUCTOS ═══════════
