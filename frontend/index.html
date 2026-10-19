@@ -798,6 +798,10 @@
                             <label class="form-label" for="prod-codigo">Código SKU *</label>
                             <input type="text" class="form-control" id="prod-codigo" placeholder="Ej: ITEM-100" required
                                 aria-required="true" />
+                            <label class="sku-auto-toggle" id="sku-auto-wrapper" for="prod-sku-auto">
+                                <input type="checkbox" id="prod-sku-auto" checked onchange="onToggleSkuAuto()" />
+                                <span>Generar automáticamente</span>
+                            </label>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="prod-nombre">Descripción *</label>

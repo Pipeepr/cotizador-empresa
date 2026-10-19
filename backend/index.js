@@ -227,16 +227,60 @@ app.get('/productos', requireAuth, async (req, res) => {
   }
 });
 
+// ═══════════ SKU AUTOMÁTICO ═══════════
+// Formato: PROD-0001, PROD-0002, ... (los códigos manuales existentes no se tocan)
+const SKU_PREFIJO = 'PROD-';
+const SKU_DIGITOS = 4;
+
+async function calcularSiguienteSku() {
+  const result = await pool.query(
+    `SELECT COALESCE(MAX(CAST(SUBSTRING(codigo_sku FROM $1) AS BIGINT)), 0) AS max
+       FROM productos
+      WHERE codigo_sku ~ $1`,
+    [`^${SKU_PREFIJO}(\\d+)$`]
+  );
+  const siguiente = Number(result.rows[0].max) + 1;
+  return SKU_PREFIJO + String(siguiente).padStart(SKU_DIGITOS, '0');
+}
+
+// 3.5 OBTENER el siguiente SKU sugerido (solo vista previa)
+app.get('/productos/siguiente-sku', requireAuth, async (req, res) => {
+  try {
+    res.json({ sku: await calcularSiguienteSku() });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Error al calcular el siguiente SKU' });
+  }
+});
+
 // 4. CREAR un producto
 app.post('/productos', requireAuth, async (req, res) => {
-  const { codigo_sku, nombre, precio_base, cliente } = req.body;
+  const { nombre, precio_base, cliente, auto_sku } = req.body;
+  const insertar = (sku) => pool.query(
+    'INSERT INTO productos (codigo_sku, nombre, precio_base, cliente) VALUES ($1, $2, $3, $4) RETURNING *',
+    [sku, nombre, precio_base, cliente || null]
+  );
+
   try {
-    const result = await pool.query(
-      'INSERT INTO productos (codigo_sku, nombre, precio_base, cliente) VALUES ($1, $2, $3, $4) RETURNING *',
-      [codigo_sku, nombre, precio_base, cliente || null]
-    );
+    if (auto_sku) {
+      // Reintenta si otro usuario tomó el mismo número al mismo tiempo
+      for (let intento = 0; intento < 5; intento++) {
+        try {
+          const result = await insertar(await calcularSiguienteSku());
+          return res.json(result.rows[0]);
+        } catch (err) {
+          if (err.code !== '23505') throw err;
+        }
+      }
+      return res.status(409).send('No se pudo generar un SKU único, intenta nuevamente');
+    }
+
+    const codigo_sku = (req.body.codigo_sku || '').trim();
+    if (!codigo_sku) return res.status(400).send('El código SKU es obligatorio');
+    const result = await insertar(codigo_sku);
     res.json(result.rows[0]);
   } catch (err) {
+    if (err.code === '23505') return res.status(409).send('Ya existe un producto con ese código SKU');
     res.status(500).send('Error al crear producto');
   }
 });

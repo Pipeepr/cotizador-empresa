@@ -367,12 +367,46 @@ function renderDatalistEmpresasProducto() {
     datalist.innerHTML = nombres.map(n => `<option value="${escapeHtml(n)}"></option>`).join('');
 }
 
+// ═══════════ SKU AUTOMÁTICO ═══════════
+// Con la casilla marcada, el servidor asigna el siguiente código (PROD-0001, PROD-0002...).
+// Al desmarcarla, se puede escribir un código propio.
+async function onToggleSkuAuto() {
+    const input = document.getElementById('prod-codigo');
+    const check = document.getElementById('prod-sku-auto');
+
+    if (!check.checked) {
+        input.readOnly = false;
+        input.classList.remove('sku-auto-preview');
+        input.value = '';
+        input.placeholder = 'Ej: ITEM-100';
+        input.focus();
+        return;
+    }
+
+    input.readOnly = true;
+    input.classList.add('sku-auto-preview');
+    input.value = '';
+    input.placeholder = 'Calculando...';
+    try {
+        const res = await fetch(`${API}/productos/siguiente-sku`);
+        if (!res.ok) throw new Error();
+        const { sku } = await res.json();
+        if (check.checked) input.value = sku; // por si la desmarcaron mientras cargaba
+    } catch {
+        if (check.checked) input.placeholder = 'Se asignará al guardar';
+    }
+}
+
 function abrirModalNuevoProducto() {
     document.getElementById('modal-producto-title').innerHTML = `${Icons.package} Nuevo Producto`;
     isEditingProduct = false;
     originalSku = '';
     renderDatalistEmpresasProducto();
+    document.getElementById('sku-auto-wrapper').style.display = '';
+    document.getElementById('prod-sku-auto').checked = true;
+    onToggleSkuAuto();
     modalProducto.open();
+    setTimeout(() => document.getElementById('prod-nombre').focus(), 150);
 }
 
 function abrirEditarProducto(sku) {
@@ -380,6 +414,9 @@ function abrirEditarProducto(sku) {
     if (!prod) return;
     
     document.getElementById('modal-producto-title').innerHTML = `${Icons.package} Editar Producto`;
+    document.getElementById('sku-auto-wrapper').style.display = 'none';
+    document.getElementById('prod-sku-auto').checked = false;
+    document.getElementById('prod-codigo').classList.remove('sku-auto-preview');
     document.getElementById('prod-codigo').value = prod.codigo_sku;
     document.getElementById('prod-codigo').readOnly = true; // SKU can't be changed
     document.getElementById('prod-nombre').value = prod.nombre;
@@ -463,8 +500,9 @@ async function guardarProducto(event) {
     const nombre = document.getElementById('prod-nombre').value.trim();
     const precio_base = document.getElementById('prod-precio').value;
     const cliente = document.getElementById('prod-cliente').value.trim();
+    const auto_sku = !isEditingProduct && document.getElementById('prod-sku-auto').checked;
 
-    if (!codigo_sku || !nombre || !precio_base) {
+    if ((!auto_sku && !codigo_sku) || !nombre || !precio_base) {
         showToast('Código, Nombre y Precio son obligatorios', 'error');
         return;
     }
@@ -481,7 +519,7 @@ async function guardarProducto(event) {
         const res = await fetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ codigo_sku, nombre, precio_base, cliente }),
+            body: JSON.stringify({ codigo_sku: auto_sku ? undefined : codigo_sku, auto_sku, nombre, precio_base, cliente }),
         });
 
         if (!res.ok) {
@@ -497,7 +535,7 @@ async function guardarProducto(event) {
             showToast(`Producto "${escapeHtml(nombre)}" actualizado exitosamente`, 'success');
         } else {
             productos.push(nuevoProducto);
-            showToast(`Producto "${escapeHtml(nombre)}" creado exitosamente`, 'success');
+            showToast(`Producto "${escapeHtml(nombre)}" creado con código ${escapeHtml(nuevoProducto.codigo_sku)}`, 'success');
         }
         
         renderSelectProductos();
@@ -505,7 +543,10 @@ async function guardarProducto(event) {
         renderStatsProductos();
         modalProducto.close();
     } catch (err) {
-        showToast('Error al guardar el producto. ¿Código duplicado?', 'error');
+        const msg = err.message && err.message.length < 120 && !err.message.trim().startsWith('<')
+            ? err.message
+            : 'Error al guardar el producto. ¿Código duplicado?';
+        showToast(escapeHtml(msg), 'error');
     } finally {
         btn.disabled = false;
         btn.innerHTML = originalHTML;

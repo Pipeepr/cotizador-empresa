@@ -335,6 +335,35 @@ select.form-control {
 .form-row-3 { grid-template-columns: 2fr 1fr; }
 .form-row-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
 
+/* SKU automático */
+.sku-auto-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    user-select: none;
+}
+
+.sku-auto-toggle input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent-start);
+    cursor: pointer;
+}
+
+.sku-auto-toggle:hover { color: var(--text-primary); }
+
+.form-control.sku-auto-preview {
+    background: var(--bg-card);
+    color: var(--accent-start);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: default;
+}
+
 /* ═══════════════════════════════════════════
    SEARCH INPUT
    ═══════════════════════════════════════════ */
