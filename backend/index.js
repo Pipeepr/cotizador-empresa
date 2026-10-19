@@ -228,19 +228,19 @@ app.get('/productos', requireAuth, async (req, res) => {
 });
 
 // ═══════════ SKU AUTOMÁTICO ═══════════
-// Formato: PROD-0001, PROD-0002, ... (los códigos manuales existentes no se tocan)
-const SKU_PREFIJO = 'PROD-';
-const SKU_DIGITOS = 4;
+// Formato: 7 dígitos numéricos, comenzando en 1000001 (ej: 1000001, 1000002...)
+const SKU_BASE_INICIAL = 1000001;
 
 async function calcularSiguienteSku() {
   const result = await pool.query(
-    `SELECT COALESCE(MAX(CAST(SUBSTRING(codigo_sku FROM $1) AS BIGINT)), 0) AS max
+    `SELECT COALESCE(MAX(CAST(codigo_sku AS BIGINT)), 0) AS max
        FROM productos
-      WHERE codigo_sku ~ $1`,
-    [`^${SKU_PREFIJO}(\\d+)$`]
+      WHERE codigo_sku ~ '^[0-9]{7}$'
+        AND CAST(codigo_sku AS BIGINT) >= 1000001`
   );
-  const siguiente = Number(result.rows[0].max) + 1;
-  return SKU_PREFIJO + String(siguiente).padStart(SKU_DIGITOS, '0');
+  const maxActual = Number(result.rows[0].max);
+  const siguiente = maxActual >= SKU_BASE_INICIAL ? maxActual + 1 : SKU_BASE_INICIAL;
+  return String(siguiente);
 }
 
 // 3.5 OBTENER el siguiente SKU sugerido (solo vista previa)

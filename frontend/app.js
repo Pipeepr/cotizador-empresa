@@ -391,7 +391,7 @@ function renderDatalistEmpresasProducto() {
 }
 
 // ═══════════ SKU AUTOMÁTICO ═══════════
-// Con la casilla marcada, el servidor asigna el siguiente código (PROD-0001, PROD-0002...).
+// Con la casilla marcada, el servidor asigna el siguiente código numérico de 7 dígitos (1000001, 1000002...).
 // Al desmarcarla, se puede escribir un código propio.
 async function onToggleSkuAuto() {
     const input = document.getElementById('prod-codigo');
@@ -401,7 +401,7 @@ async function onToggleSkuAuto() {
         input.readOnly = false;
         input.classList.remove('sku-auto-preview');
         input.value = '';
-        input.placeholder = 'Ej: ITEM-100';
+        input.placeholder = 'Ej: 1000001';
         input.focus();
         return;
     }
