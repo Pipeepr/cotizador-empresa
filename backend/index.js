@@ -229,11 +229,11 @@ app.get('/productos', requireAuth, async (req, res) => {
 
 // 4. CREAR un producto
 app.post('/productos', requireAuth, async (req, res) => {
-  const { codigo_sku, nombre, precio_base, stock } = req.body;
+  const { codigo_sku, nombre, precio_base, cliente } = req.body;
   try {
     const result = await pool.query(
-      'INSERT INTO productos (codigo_sku, nombre, precio_base, stock) VALUES ($1, $2, $3, $4) RETURNING *',
-      [codigo_sku, nombre, precio_base, stock]
+      'INSERT INTO productos (codigo_sku, nombre, precio_base, cliente) VALUES ($1, $2, $3, $4) RETURNING *',
+      [codigo_sku, nombre, precio_base, cliente || null]
     );
     res.json(result.rows[0]);
   } catch (err) {
@@ -244,11 +244,11 @@ app.post('/productos', requireAuth, async (req, res) => {
 // 4.5 ACTUALIZAR un producto
 app.put('/productos/:codigo_sku', requireAuth, async (req, res) => {
   const { codigo_sku } = req.params;
-  const { nombre, precio_base, stock } = req.body;
+  const { nombre, precio_base, cliente } = req.body;
   try {
     const result = await pool.query(
-      'UPDATE productos SET nombre = $1, precio_base = $2, stock = $3 WHERE codigo_sku = $4 RETURNING *',
-      [nombre, precio_base, stock, codigo_sku]
+      'UPDATE productos SET nombre = $1, precio_base = $2, cliente = $3 WHERE codigo_sku = $4 RETURNING *',
+      [nombre, precio_base, cliente || null, codigo_sku]
     );
     res.json(result.rows[0]);
   } catch (err) {
@@ -677,6 +677,7 @@ async function initDB() {
       ALTER TABLE clientes ADD COLUMN IF NOT EXISTS comuna VARCHAR(255);
       ALTER TABLE clientes ADD COLUMN IF NOT EXISTS ciudad VARCHAR(255);
       ALTER TABLE clientes ADD COLUMN IF NOT EXISTS giro VARCHAR(255);
+      ALTER TABLE productos ADD COLUMN IF NOT EXISTS cliente VARCHAR(255);
     `);
     
     // Seed admin if not exists

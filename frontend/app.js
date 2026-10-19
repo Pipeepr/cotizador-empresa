@@ -355,10 +355,23 @@ const modalProducto = {
     }
 };
 
+// Llena las sugerencias del campo "Cliente (Empresa)" con los clientes registrados
+function renderDatalistEmpresasProducto() {
+    const datalist = document.getElementById('lista-empresas-producto');
+    if (!datalist) return;
+    const nombres = [...new Set(
+        (clientes || [])
+            .map(c => (c.empresa || c.nombre || '').trim())
+            .filter(Boolean)
+    )].sort((a, b) => a.localeCompare(b, 'es'));
+    datalist.innerHTML = nombres.map(n => `<option value="${escapeHtml(n)}"></option>`).join('');
+}
+
 function abrirModalNuevoProducto() {
     document.getElementById('modal-producto-title').innerHTML = `${Icons.package} Nuevo Producto`;
     isEditingProduct = false;
     originalSku = '';
+    renderDatalistEmpresasProducto();
     modalProducto.open();
 }
 
@@ -371,10 +384,11 @@ function abrirEditarProducto(sku) {
     document.getElementById('prod-codigo').readOnly = true; // SKU can't be changed
     document.getElementById('prod-nombre').value = prod.nombre;
     document.getElementById('prod-precio').value = prod.precio_base;
-    document.getElementById('prod-stock').value = prod.stock || 0;
+    document.getElementById('prod-cliente').value = prod.cliente || '';
     
     isEditingProduct = true;
     originalSku = prod.codigo_sku;
+    renderDatalistEmpresasProducto();
     modalProducto.open();
 }
 
@@ -448,7 +462,7 @@ async function guardarProducto(event) {
     const codigo_sku = document.getElementById('prod-codigo').value.trim();
     const nombre = document.getElementById('prod-nombre').value.trim();
     const precio_base = document.getElementById('prod-precio').value;
-    const stock = document.getElementById('prod-stock').value || 0;
+    const cliente = document.getElementById('prod-cliente').value.trim();
 
     if (!codigo_sku || !nombre || !precio_base) {
         showToast('Código, Nombre y Precio son obligatorios', 'error');
@@ -467,7 +481,7 @@ async function guardarProducto(event) {
         const res = await fetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ codigo_sku, nombre, precio_base, stock }),
+            body: JSON.stringify({ codigo_sku, nombre, precio_base, cliente }),
         });
 
         if (!res.ok) {
@@ -1337,7 +1351,8 @@ function renderTablaProductos() {
         ? productos.filter(p => {
             const q = searchProductoQuery.toLowerCase();
             return (p.nombre && p.nombre.toLowerCase().includes(q))
-                || (p.codigo_sku && p.codigo_sku.toLowerCase().includes(q));
+                || (p.codigo_sku && p.codigo_sku.toLowerCase().includes(q))
+                || (p.cliente && p.cliente.toLowerCase().includes(q));
         })
         : productos;
 
@@ -1360,7 +1375,7 @@ function renderTablaProductos() {
             <td><span class="badge badge-info">${escapeHtml(p.codigo_sku)}</span></td>
             <td><strong>${escapeHtml(p.nombre)}</strong></td>
             <td>${formatCLP(p.precio_base)}</td>
-            <td>${p.stock || 0}</td>
+            <td>${p.cliente ? escapeHtml(p.cliente) : '<span style="opacity:.5">—</span>'}</td>
             <td>
                 <div style="display:flex; gap: 8px;">
                     <button type="button" class="btn btn-sm" style="background-color: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px;" onclick="abrirEditarProducto('${escapeHtml(p.codigo_sku)}')">

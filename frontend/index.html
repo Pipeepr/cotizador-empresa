@@ -241,7 +241,7 @@
                                         <th scope="col">Código SKU</th>
                                         <th scope="col">Nombre / Descripción</th>
                                         <th scope="col">Precio Base</th>
-                                        <th scope="col">Stock</th>
+                                        <th scope="col">Cliente (Empresa)</th>
                                         <th scope="col">Acciones</th>
                                     </tr>
                                 </thead>
@@ -812,8 +812,10 @@
                                 required />
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="prod-stock">Stock</label>
-                            <input type="number" class="form-control" id="prod-stock" placeholder="0" min="0" />
+                            <label class="form-label" for="prod-cliente">Cliente (Empresa)</label>
+                            <input type="text" class="form-control" id="prod-cliente" list="lista-empresas-producto"
+                                placeholder="Empresa a la que se le trabaja" autocomplete="off" />
+                            <datalist id="lista-empresas-producto"></datalist>
                         </div>
                     </div>
                     <div class="modal-actions">
