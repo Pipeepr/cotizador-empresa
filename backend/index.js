@@ -255,11 +255,21 @@ app.get('/productos/siguiente-sku', requireAuth, async (req, res) => {
 
 // 4. CREAR un producto
 app.post('/productos', requireAuth, async (req, res) => {
-  const { nombre, precio_base, cliente, auto_sku } = req.body;
-  const insertar = (sku) => pool.query(
-    'INSERT INTO productos (codigo_sku, nombre, precio_base, cliente) VALUES ($1, $2, $3, $4) RETURNING *',
-    [sku, nombre, precio_base, cliente || null]
-  );
+  const { nombre, precio_base, cliente, auto_sku, fecha_precio } = req.body;
+  const fPrecio = fecha_precio !== undefined ? (fecha_precio ? fecha_precio : null) : new Date();
+
+  const insertar = async (sku) => {
+    const resProd = await pool.query(
+      'INSERT INTO productos (codigo_sku, nombre, precio_base, cliente, fecha_precio) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [sku, nombre, precio_base, cliente || null, fPrecio]
+    );
+    // Registrar precio inicial en historial
+    await pool.query(
+      'INSERT INTO historial_precios (producto_sku, precio, fecha, motivo) VALUES ($1, $2, COALESCE($3, CURRENT_TIMESTAMP), $4)',
+      [sku, precio_base, fPrecio, 'Precio inicial']
+    ).catch(e => console.error('Error insertando historial precio:', e.message));
+    return resProd;
+  };
 
   try {
     if (auto_sku) {
@@ -288,15 +298,95 @@ app.post('/productos', requireAuth, async (req, res) => {
 // 4.5 ACTUALIZAR un producto
 app.put('/productos/:codigo_sku', requireAuth, async (req, res) => {
   const { codigo_sku } = req.params;
-  const { nombre, precio_base, cliente } = req.body;
+  const { nombre, precio_base, cliente, fecha_precio } = req.body;
+  try {
+    const prodPrev = await pool.query('SELECT * FROM productos WHERE codigo_sku = $1', [codigo_sku]);
+    if (prodPrev.rows.length === 0) return res.status(404).send('Producto no encontrado');
+
+    const prevPrice = parseFloat(prodPrev.rows[0].precio_base);
+    const newPrice = parseFloat(precio_base);
+    const priceChanged = !isNaN(newPrice) && newPrice !== prevPrice;
+
+    let fPrecio;
+    if (fecha_precio !== undefined) {
+      fPrecio = fecha_precio ? fecha_precio : null;
+    } else if (priceChanged) {
+      fPrecio = new Date();
+    } else {
+      fPrecio = prodPrev.rows[0].fecha_precio;
+    }
+
+    const result = await pool.query(
+      'UPDATE productos SET nombre = $1, precio_base = $2, cliente = $3, fecha_precio = $4 WHERE codigo_sku = $5 RETURNING *',
+      [nombre, precio_base, cliente || null, fPrecio, codigo_sku]
+    );
+
+    if (priceChanged) {
+      await pool.query(
+        'INSERT INTO historial_precios (producto_sku, precio, fecha, motivo) VALUES ($1, $2, COALESCE($3, CURRENT_TIMESTAMP), $4)',
+        [codigo_sku, newPrice, fPrecio, 'Actualización de precio']
+      ).catch(e => console.error('Error insertando historial precio:', e.message));
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al actualizar producto');
+  }
+});
+
+// 4.6 OBTENER historial de precios de un producto
+app.get('/productos/:codigo_sku/historial-precios', requireAuth, async (req, res) => {
+  const { codigo_sku } = req.params;
   try {
     const result = await pool.query(
-      'UPDATE productos SET nombre = $1, precio_base = $2, cliente = $3 WHERE codigo_sku = $4 RETURNING *',
-      [nombre, precio_base, cliente || null, codigo_sku]
+      'SELECT * FROM historial_precios WHERE producto_sku = $1 ORDER BY fecha DESC, id DESC',
+      [codigo_sku]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).send('Error al obtener historial de precios');
+  }
+});
+
+// 4.7 AGREGAR registro histórico manual
+app.post('/productos/:codigo_sku/historial-precios', requireAuth, async (req, res) => {
+  const { codigo_sku } = req.params;
+  const { precio, fecha, motivo } = req.body;
+  try {
+    const result = await pool.query(
+      'INSERT INTO historial_precios (producto_sku, precio, fecha, motivo) VALUES ($1, $2, COALESCE($3, CURRENT_TIMESTAMP), $4) RETURNING *',
+      [codigo_sku, precio, fecha || null, motivo || 'Registro manual']
     );
     res.json(result.rows[0]);
   } catch (err) {
-    res.status(500).send('Error al actualizar producto');
+    res.status(500).send('Error al crear registro de historial');
+  }
+});
+
+// 4.8 MODIFICAR registro de historial de precio
+app.put('/productos/historial-precios/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const { fecha, precio, motivo } = req.body;
+  try {
+    const result = await pool.query(
+      'UPDATE historial_precios SET fecha = COALESCE($1, fecha), precio = COALESCE($2, precio), motivo = COALESCE($3, motivo) WHERE id = $4 RETURNING *',
+      [fecha || null, precio || null, motivo || null, id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).send('Error al actualizar registro de historial');
+  }
+});
+
+// 4.9 ELIMINAR registro de historial de precio
+app.delete('/productos/historial-precios/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM historial_precios WHERE id = $1', [id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).send('Error al eliminar registro de historial');
   }
 });
 
@@ -722,6 +812,20 @@ async function initDB() {
       ALTER TABLE clientes ADD COLUMN IF NOT EXISTS ciudad VARCHAR(255);
       ALTER TABLE clientes ADD COLUMN IF NOT EXISTS giro VARCHAR(255);
       ALTER TABLE productos ADD COLUMN IF NOT EXISTS cliente VARCHAR(255);
+      ALTER TABLE productos ADD COLUMN IF NOT EXISTS fecha_precio TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+      CREATE TABLE IF NOT EXISTS historial_precios (
+        id SERIAL PRIMARY KEY,
+        producto_sku VARCHAR(50) REFERENCES productos(codigo_sku) ON DELETE CASCADE,
+        precio DECIMAL(10, 2) NOT NULL,
+        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        motivo VARCHAR(255)
+      );
+
+      INSERT INTO historial_precios (producto_sku, precio, fecha, motivo)
+      SELECT codigo_sku, precio_base, COALESCE(fecha_precio, CURRENT_TIMESTAMP), 'Precio inicial'
+      FROM productos p
+      WHERE NOT EXISTS (SELECT 1 FROM historial_precios h WHERE h.producto_sku = p.codigo_sku);
     `);
     
     // Seed admin if not exists

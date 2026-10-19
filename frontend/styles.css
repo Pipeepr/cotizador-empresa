@@ -2055,3 +2055,41 @@ textarea.wysiwyg-input.desc-input:focus {
     animation: rowAutofillGlow 0.9s ease-out;
 }
 
+/* ═══════════════════════════════════════════
+   HISTORIAL DE PRECIOS & FILTRO DE CLIENTE
+   ═══════════════════════════════════════════ */
+.btn-hist-link {
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--accent-start);
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.btn-hist-link:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--accent-start);
+    transform: translateY(-1px);
+}
+
+.hist-date-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.filter-wrapper select.form-control {
+    background-color: var(--bg-card);
+    font-weight: 500;
+}
+
+

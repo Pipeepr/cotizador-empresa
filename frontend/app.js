@@ -44,6 +44,8 @@ let isLoadingClientes = false;
 let isLoadingProductos = false;
 let searchClienteQuery = '';
 let searchProductoQuery = '';
+let filtroClienteProducto = '';
+let currentHistorialSku = '';
 let isEditingProduct = false;
 let originalSku = '';
 
@@ -58,6 +60,26 @@ function escapeHtml(str) {
 // ═══════════ UTILITY: Format Currency ═══════════
 function formatCLP(amount) {
     return '$' + Math.round(Number(amount) || 0).toLocaleString('es-CL');
+}
+
+function formatFechaCorta(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return String(dateStr).split('T')[0];
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+}
+
+function setProdFechaHoy() {
+    const input = document.getElementById('prod-fecha');
+    if (input) input.value = new Date().toISOString().split('T')[0];
+}
+
+function borrarProdFecha() {
+    const input = document.getElementById('prod-fecha');
+    if (input) input.value = '';
 }
 
 // ═══════════ NAVIGATION ═══════════
@@ -406,6 +428,8 @@ function abrirModalNuevoProducto() {
     document.getElementById('sku-auto-wrapper').style.display = '';
     document.getElementById('prod-sku-auto').checked = true;
     onToggleSkuAuto();
+    const fInput = document.getElementById('prod-fecha');
+    if (fInput) fInput.value = new Date().toISOString().split('T')[0];
     modalProducto.open();
     setTimeout(() => document.getElementById('prod-nombre').focus(), 150);
 }
@@ -424,6 +448,19 @@ function abrirEditarProducto(sku) {
     document.getElementById('prod-precio').value = prod.precio_base;
     document.getElementById('prod-cliente').value = prod.cliente || '';
     
+    const fInput = document.getElementById('prod-fecha');
+    if (fInput) {
+        if (prod.fecha_precio) {
+            try {
+                fInput.value = new Date(prod.fecha_precio).toISOString().split('T')[0];
+            } catch {
+                fInput.value = '';
+            }
+        } else {
+            fInput.value = '';
+        }
+    }
+
     isEditingProduct = true;
     originalSku = prod.codigo_sku;
     renderDatalistEmpresasProducto();
@@ -502,6 +539,8 @@ async function guardarProducto(event) {
     const precio_base = document.getElementById('prod-precio').value;
     const cliente = document.getElementById('prod-cliente').value.trim();
     const auto_sku = !isEditingProduct && document.getElementById('prod-sku-auto').checked;
+    const fecha_precio_raw = document.getElementById('prod-fecha') ? document.getElementById('prod-fecha').value : undefined;
+    const fecha_precio = fecha_precio_raw !== undefined ? (fecha_precio_raw ? fecha_precio_raw : null) : undefined;
 
     if ((!auto_sku && !codigo_sku) || !nombre || !precio_base) {
         showToast('Código, Nombre y Precio son obligatorios', 'error');
@@ -520,7 +559,7 @@ async function guardarProducto(event) {
         const res = await fetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ codigo_sku: auto_sku ? undefined : codigo_sku, auto_sku, nombre, precio_base, cliente }),
+            body: JSON.stringify({ codigo_sku: auto_sku ? undefined : codigo_sku, auto_sku, nombre, precio_base, cliente, fecha_precio }),
         });
 
         if (!res.ok) {
@@ -1648,28 +1687,77 @@ async function enviarCorreoCotizacion(e) {
     }
 }
 
-// ═══════════ RENDER: TABLE PRODUCTOS ═══════════
+// ═══════════ FILTRO Y RENDER: TABLE PRODUCTOS ═══════════
+function onFilterClienteProductos(val) {
+    filtroClienteProducto = val || '';
+    renderTablaProductos();
+}
+
+function renderSelectFiltroClientesProductos() {
+    const select = document.getElementById('filtro-cliente-productos');
+    if (!select) return;
+
+    const clientesMap = {};
+    let sinClienteCount = 0;
+    (productos || []).forEach(p => {
+        if (p.cliente && p.cliente.trim()) {
+            const nom = p.cliente.trim();
+            clientesMap[nom] = (clientesMap[nom] || 0) + 1;
+        } else {
+            sinClienteCount++;
+        }
+    });
+
+    const lista = Object.keys(clientesMap).sort((a, b) => a.localeCompare(b, 'es'));
+
+    let html = `<option value="">🏢 Todos los Clientes (${productos.length})</option>`;
+    if (sinClienteCount > 0) {
+        html += `<option value="__SIN_CLIENTE__" ${filtroClienteProducto === '__SIN_CLIENTE__' ? 'selected' : ''}>(Sin cliente asignado - ${sinClienteCount})</option>`;
+    }
+    lista.forEach(nom => {
+        const sel = filtroClienteProducto === nom ? 'selected' : '';
+        html += `<option value="${escapeHtml(nom)}" ${sel}>${escapeHtml(nom)} (${clientesMap[nom]})</option>`;
+    });
+    select.innerHTML = html;
+}
+
 function renderTablaProductos() {
     const tbody = document.getElementById('tabla-listado-productos');
     if (!tbody) return;
 
-    const filtered = searchProductoQuery
-        ? productos.filter(p => {
+    renderSelectFiltroClientesProductos();
+
+    const filtered = (productos || []).filter(p => {
+        let matchSearch = true;
+        if (searchProductoQuery) {
             const q = searchProductoQuery.toLowerCase();
-            return (p.nombre && p.nombre.toLowerCase().includes(q))
+            matchSearch = (p.nombre && p.nombre.toLowerCase().includes(q))
                 || (p.codigo_sku && p.codigo_sku.toLowerCase().includes(q))
                 || (p.cliente && p.cliente.toLowerCase().includes(q));
-        })
-        : productos;
+        }
+
+        let matchCliente = true;
+        if (filtroClienteProducto) {
+            if (filtroClienteProducto === '__SIN_CLIENTE__') {
+                matchCliente = !p.cliente || !p.cliente.trim();
+            } else {
+                matchCliente = p.cliente && p.cliente.toLowerCase() === filtroClienteProducto.toLowerCase();
+            }
+        }
+
+        return matchSearch && matchCliente;
+    });
 
     if (filtered.length === 0) {
-        const msg = searchProductoQuery
-            ? `No se encontraron productos para "${escapeHtml(searchProductoQuery)}"`
-            : 'No hay productos registrados';
+        let msg = 'No hay productos registrados';
+        if (searchProductoQuery || filtroClienteProducto) {
+            msg = 'No se encontraron productos con los filtros aplicados';
+        }
         tbody.innerHTML = `<tr><td colspan="5">
             <div class="empty-state">
                 <div class="empty-icon">${Icons.package}</div>
                 <p>${msg}</p>
+                ${filtroClienteProducto ? `<button type="button" class="btn btn-ghost btn-sm" style="margin-top: 10px;" onclick="onFilterClienteProductos('')">Quitar filtro de cliente</button>` : ''}
             </div>
         </td></tr>`;
         document.getElementById('badge-productos').textContent = '0';
@@ -1680,7 +1768,17 @@ function renderTablaProductos() {
         <tr>
             <td><span class="badge badge-info">${escapeHtml(p.codigo_sku)}</span></td>
             <td><strong>${escapeHtml(p.nombre)}</strong></td>
-            <td>${formatCLP(p.precio_base)}</td>
+            <td>
+                <div style="font-weight: 700; color: var(--text-primary); font-size: 13.5px;">
+                    ${formatCLP(p.precio_base)}
+                </div>
+                <div class="hist-date-chip" style="margin-top: 3px; display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 11px; color: var(--text-muted);">${p.fecha_precio ? '🕒 ' + formatFechaCorta(p.fecha_precio) : '<span style="opacity:0.6;">🕒 Sin fecha</span>'}</span>
+                    <button type="button" class="btn-hist-link" onclick="abrirHistorialPrecios('${escapeHtml(p.codigo_sku)}')">
+                        📜 Historial
+                    </button>
+                </div>
+            </td>
             <td>${p.cliente ? escapeHtml(p.cliente) : '<span style="opacity:.5">—</span>'}</td>
             <td>
                 <div style="display:flex; gap: 8px;">
@@ -1706,6 +1804,176 @@ function onSearchProductos(e) {
 function renderStatsProductos() {
     const totalEl = document.getElementById('stat-total-productos');
     if (totalEl) totalEl.textContent = productos.length;
+}
+
+// ═══════════ MODAL: HISTORIAL DE PRECIOS ═══════════
+const modalHistorialPrecios = {
+    el: () => document.getElementById('modal-historial-precios'),
+    open() {
+        const overlay = this.el();
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    },
+    close() {
+        const overlay = this.el();
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        currentHistorialSku = '';
+    }
+};
+
+async function abrirHistorialPrecios(sku) {
+    currentHistorialSku = sku;
+    const prod = productos.find(p => p.codigo_sku === sku);
+    if (!prod) return;
+
+    const infoBox = document.getElementById('hist-prod-info');
+    if (infoBox) {
+        infoBox.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <div>
+                    <span class="badge badge-info" style="font-size: 11px;">${escapeHtml(prod.codigo_sku)}</span>
+                    <strong style="margin-left: 6px; font-size: 14px;">${escapeHtml(prod.nombre)}</strong>
+                    ${prod.cliente ? `<div style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">🏢 Cliente: <strong>${escapeHtml(prod.cliente)}</strong></div>` : ''}
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 11px; color: var(--text-muted);">Precio Actual:</div>
+                    <strong style="font-size: 17px; color: var(--success);">${formatCLP(prod.precio_base)}</strong>
+                </div>
+            </div>
+        `;
+    }
+
+    const fInput = document.getElementById('hist-nuevo-fecha');
+    if (fInput) fInput.value = new Date().toISOString().split('T')[0];
+    const pInput = document.getElementById('hist-nuevo-precio');
+    if (pInput) pInput.value = '';
+    const mInput = document.getElementById('hist-nuevo-motivo');
+    if (mInput) mInput.value = '';
+
+    modalHistorialPrecios.open();
+    await cargarHistorialPreciosTabla(sku);
+}
+
+async function cargarHistorialPreciosTabla(sku) {
+    const tbody = document.getElementById('tabla-historial-precios-body');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding: 18px;"><span class="spinner"></span> Cargando historial...</td></tr>';
+
+    try {
+        const res = await fetch(`${API}/productos/${encodeURIComponent(sku)}/historial-precios`);
+        if (!res.ok) throw new Error('Error al cargar historial');
+        const rows = await res.json();
+
+        if (rows.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding: 18px; color: var(--text-muted);">No hay registros de cambios de precio para este producto</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = rows.map(r => {
+            const fechaInputVal = r.fecha ? new Date(r.fecha).toISOString().split('T')[0] : '';
+            return `
+                <tr data-hist-id="${r.id}">
+                    <td style="padding: 8px; vertical-align: middle;">
+                        <input type="date" class="form-control hist-item-fecha" value="${fechaInputVal}" style="padding: 4px 6px; font-size: 12px; width: 135px;" />
+                    </td>
+                    <td style="padding: 8px; vertical-align: middle;">
+                        <strong style="color: var(--success); font-size: 13px;">${formatCLP(r.precio)}</strong>
+                    </td>
+                    <td style="padding: 8px; color: var(--text-secondary); font-size: 12px; vertical-align: middle;">
+                        ${escapeHtml(r.motivo || 'Sin detalle')}
+                    </td>
+                    <td style="padding: 8px; text-align: right; vertical-align: middle;">
+                        <div style="display: inline-flex; gap: 4px;">
+                            <button type="button" class="btn btn-sm btn-ghost" onclick="guardarCambioFechaHistorial(${r.id}, this)" title="Guardar fecha modificada" style="padding: 4px 8px; font-size: 11px;">
+                                💾 Guardar
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="eliminarRegistroHistorial(${r.id})" title="Eliminar registro" style="padding: 4px 8px; font-size: 11px;">
+                                🗑️
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error(err);
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding: 18px; color: var(--danger);">Error al cargar historial de precios</td></tr>';
+    }
+}
+
+async function guardarCambioFechaHistorial(id, btn) {
+    const tr = btn.closest('tr');
+    const dateInput = tr.querySelector('.hist-item-fecha');
+    const nuevaFecha = dateInput ? dateInput.value : '';
+
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '...';
+
+    try {
+        const res = await fetch(`${API}/productos/historial-precios/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fecha: nuevaFecha || null })
+        });
+        if (!res.ok) throw new Error();
+        showToast('Fecha de historial actualizada', 'success');
+        await cargarProductos();
+        await cargarHistorialPreciosTabla(currentHistorialSku);
+    } catch {
+        showToast('Error al actualizar fecha', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+    }
+}
+
+async function eliminarRegistroHistorial(id) {
+    if (!confirm('¿Deseas eliminar este registro del historial de precios?')) return;
+    try {
+        const res = await fetch(`${API}/productos/historial-precios/${id}`, {
+            method: 'DELETE'
+        });
+        if (!res.ok) throw new Error();
+        showToast('Registro eliminado del historial', 'success');
+        await cargarHistorialPreciosTabla(currentHistorialSku);
+    } catch {
+        showToast('Error al eliminar registro', 'error');
+    }
+}
+
+async function guardarRegistroHistorialManual() {
+    if (!currentHistorialSku) return;
+    const fInput = document.getElementById('hist-nuevo-fecha');
+    const pInput = document.getElementById('hist-nuevo-precio');
+    const mInput = document.getElementById('hist-nuevo-motivo');
+
+    const fecha = fInput ? fInput.value : null;
+    const precio = pInput ? parseFloat(pInput.value) : NaN;
+    const motivo = mInput ? mInput.value.trim() : '';
+
+    if (isNaN(precio) || precio < 0) {
+        showToast('Ingresa un precio válido', 'error');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/productos/${encodeURIComponent(currentHistorialSku)}/historial-precios`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ precio, fecha: fecha || null, motivo: motivo || 'Registro manual' })
+        });
+        if (!res.ok) throw new Error();
+        showToast('Registro agregado al historial', 'success');
+        if (pInput) pInput.value = '';
+        if (mInput) mInput.value = '';
+        await cargarHistorialPreciosTabla(currentHistorialSku);
+    } catch {
+        showToast('Error al agregar registro de historial', 'error');
+    }
 }
 
 // ═══════════ RENDER: DASHBOARD ═══════════

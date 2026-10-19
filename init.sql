@@ -11,7 +11,16 @@ CREATE TABLE IF NOT EXISTS productos (
     nombre VARCHAR(255) NOT NULL,
     precio_base DECIMAL(10, 2) NOT NULL,
     stock INTEGER NOT NULL DEFAULT 0,
-    cliente VARCHAR(255)
+    cliente VARCHAR(255),
+    fecha_precio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS historial_precios (
+    id SERIAL PRIMARY KEY,
+    producto_sku VARCHAR(50) REFERENCES productos(codigo_sku) ON DELETE CASCADE,
+    precio DECIMAL(10, 2) NOT NULL,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    motivo VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS cotizaciones (
