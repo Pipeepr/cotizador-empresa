@@ -131,6 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const yyyy = today.getFullYear();
     document.getElementById('doc-fecha').textContent = `${dd}/${mm}/${yyyy}`;
 
+    initDescAutocomplete();
     await Promise.all([cargarClientes(), cargarProductos(), cargarHistorial()]);
 });
 
@@ -573,6 +574,240 @@ function actualizarClienteDocs() {
     if (docGiro) docGiro.textContent = "Giro: " + (cliente.giro || 'No especificado');
 }
 
+// ═══════════ AUTOCOMPLETE DE PRODUCTOS (DESCRIPCIÓN) ═══════════
+let acDropdownEl = null;
+let acActiveInput = null;
+let acActiveContext = null; // 'wysiwyg' | 'modal'
+let acActiveIndex = -1;
+let acMatches = [];
+
+function initDescAutocomplete() {
+    if (acDropdownEl) return;
+    acDropdownEl = document.createElement('div');
+    acDropdownEl.id = 'desc-ac-dropdown';
+    acDropdownEl.className = 'desc-ac-dropdown print-hide';
+    document.body.appendChild(acDropdownEl);
+
+    // Clic fuera para cerrar
+    document.addEventListener('click', (e) => {
+        if (!acDropdownEl) return;
+        if (!acDropdownEl.contains(e.target) && e.target !== acActiveInput) {
+            cerrarDescAutocomplete();
+        }
+    });
+
+    // Reposicionar en scroll/resize
+    window.addEventListener('scroll', () => {
+        if (acActiveInput && acDropdownEl && acDropdownEl.style.display === 'block') {
+            posicionarDescAutocomplete(acActiveInput);
+        }
+    }, true);
+
+    window.addEventListener('resize', () => {
+        if (acActiveInput && acDropdownEl && acDropdownEl.style.display === 'block') {
+            posicionarDescAutocomplete(acActiveInput);
+        }
+    });
+
+    // Conectar también al campo de descripción en el modal Nuevo Producto
+    const prodNombre = document.getElementById('prod-nombre');
+    if (prodNombre && !prodNombre._acAttached) {
+        prodNombre._acAttached = true;
+        prodNombre.addEventListener('input', function () {
+            if (!isEditingProduct) renderDescAutocomplete(this, 'modal');
+        });
+        prodNombre.addEventListener('keydown', function (e) {
+            if (!isEditingProduct && handleAcKeydown(e, this, 'modal')) return;
+        });
+        prodNombre.addEventListener('blur', function () {
+            setTimeout(() => {
+                if (acActiveInput === this) cerrarDescAutocomplete();
+            }, 200);
+        });
+    }
+}
+
+function posicionarDescAutocomplete(inputEl) {
+    if (!acDropdownEl || !inputEl) return;
+    const rect = inputEl.getBoundingClientRect();
+    const dropdownHeight = 260;
+    const spaceBelow = window.innerHeight - rect.bottom;
+
+    if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
+        acDropdownEl.style.top = 'auto';
+        acDropdownEl.style.bottom = `${window.innerHeight - rect.top + 4}px`;
+    } else {
+        acDropdownEl.style.bottom = 'auto';
+        acDropdownEl.style.top = `${rect.bottom + 4}px`;
+    }
+
+    const minW = Math.max(340, rect.width);
+    const maxW = 540;
+    const left = Math.max(10, Math.min(rect.left, window.innerWidth - minW - 20));
+    acDropdownEl.style.left = `${left}px`;
+    acDropdownEl.style.minWidth = `${minW}px`;
+    acDropdownEl.style.maxWidth = `${maxW}px`;
+}
+
+function cerrarDescAutocomplete() {
+    if (!acDropdownEl) return;
+    acDropdownEl.style.display = 'none';
+    acDropdownEl.innerHTML = '';
+    acActiveInput = null;
+    acActiveContext = null;
+    acActiveIndex = -1;
+    acMatches = [];
+}
+
+function renderDescAutocomplete(inputEl, context = 'wysiwyg') {
+    initDescAutocomplete();
+    const rawVal = inputEl.value.trim();
+
+    if (!rawVal || rawVal === 'Nuevo producto') {
+        cerrarDescAutocomplete();
+        return;
+    }
+
+    const q = rawVal.toLowerCase();
+    acMatches = (productos || []).filter(p => {
+        const nom = (p.nombre || '').toLowerCase();
+        const sku = (p.codigo_sku || '').toLowerCase();
+        const cli = (p.cliente || '').toLowerCase();
+        return nom.includes(q) || sku.includes(q) || cli.includes(q);
+    }).slice(0, 8);
+
+    if (acMatches.length === 0) {
+        cerrarDescAutocomplete();
+        return;
+    }
+
+    acActiveInput = inputEl;
+    acActiveContext = context;
+    acActiveIndex = -1;
+
+    acDropdownEl.innerHTML = `
+        <div class="desc-ac-header">
+            <span>Productos encontrados (${acMatches.length})</span>
+            <span class="desc-ac-hint">Clic o Enter para autorrellenar</span>
+        </div>
+        <div class="desc-ac-list">
+            ${acMatches.map((p, idx) => `
+                <div class="desc-ac-item" data-index="${idx}">
+                    <div class="desc-ac-main">
+                        <span class="desc-ac-sku">${escapeHtml(p.codigo_sku)}</span>
+                        <span class="desc-ac-nombre" title="${escapeHtml(p.nombre)}">${escapeHtml(p.nombre)}</span>
+                    </div>
+                    <div class="desc-ac-side">
+                        ${p.cliente ? `<span class="desc-ac-cliente" title="Empresa: ${escapeHtml(p.cliente)}">🏢 ${escapeHtml(p.cliente)}</span>` : ''}
+                        <span class="desc-ac-precio">${formatCLP(p.precio_base)}</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    acDropdownEl.querySelectorAll('.desc-ac-item').forEach(item => {
+        item.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            const idx = parseInt(item.dataset.index, 10);
+            ejecutarAutofill(acMatches[idx], inputEl, context);
+        });
+    });
+
+    posicionarDescAutocomplete(inputEl);
+    acDropdownEl.style.display = 'block';
+}
+
+function actualizarActiveAcItem() {
+    if (!acDropdownEl) return;
+    const items = acDropdownEl.querySelectorAll('.desc-ac-item');
+    items.forEach((it, idx) => {
+        if (idx === acActiveIndex) {
+            it.classList.add('active');
+            it.scrollIntoView({ block: 'nearest' });
+        } else {
+            it.classList.remove('active');
+        }
+    });
+}
+
+function handleAcKeydown(e, inputEl, context = 'wysiwyg') {
+    if (!acDropdownEl || acDropdownEl.style.display !== 'block' || acMatches.length === 0) {
+        return false;
+    }
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        acActiveIndex = (acActiveIndex + 1) % acMatches.length;
+        actualizarActiveAcItem();
+        return true;
+    }
+
+    if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        acActiveIndex = (acActiveIndex - 1 + acMatches.length) % acMatches.length;
+        actualizarActiveAcItem();
+        return true;
+    }
+
+    if ((e.key === 'Enter' || e.key === 'Tab') && acActiveIndex >= 0) {
+        e.preventDefault();
+        ejecutarAutofill(acMatches[acActiveIndex], inputEl, context);
+        return true;
+    }
+
+    if (e.key === 'Escape') {
+        cerrarDescAutocomplete();
+        return true;
+    }
+
+    return false;
+}
+
+function ejecutarAutofill(prod, inputEl, context) {
+    if (!prod || !inputEl) return;
+
+    if (context === 'wysiwyg') {
+        const tr = inputEl.closest('tr');
+        if (!tr) return;
+
+        inputEl.value = prod.nombre;
+        inputEl.style.height = '22px';
+        inputEl.style.height = inputEl.scrollHeight + 'px';
+
+        const skuInput = tr.querySelector('.sku-input');
+        if (skuInput) skuInput.value = prod.codigo_sku;
+
+        const priceInput = tr.querySelector('.price-input');
+        if (priceInput) {
+            priceInput.dataset.raw = prod.precio_base;
+            priceInput.value = formatCLP(prod.precio_base);
+        }
+
+        recalcularTotalesWysiwyg();
+        cerrarDescAutocomplete();
+
+        tr.classList.add('row-autofill-flash');
+        setTimeout(() => tr.classList.remove('row-autofill-flash'), 900);
+
+        showToast(`✓ Producto "${escapeHtml(prod.nombre)}" autorrellenado`, 'success');
+
+        const qtyInput = tr.querySelector('.qty-input');
+        if (qtyInput) {
+            qtyInput.focus();
+            qtyInput.select();
+        }
+    } else if (context === 'modal') {
+        inputEl.value = prod.nombre;
+        const precioInput = document.getElementById('prod-precio');
+        if (precioInput) precioInput.value = prod.precio_base;
+        const clienteInput = document.getElementById('prod-cliente');
+        if (clienteInput) clienteInput.value = prod.cliente || '';
+        cerrarDescAutocomplete();
+        showToast(`✓ Datos del producto cargados`, 'success');
+    }
+}
+
 function agregarLineaWysiwyg(sku = null, nombreOverride = null, precioOverride = null) {
     const tbody = document.getElementById('tabla-cotizacion');
 
@@ -581,7 +816,7 @@ function agregarLineaWysiwyg(sku = null, nombreOverride = null, precioOverride =
         tbody.innerHTML = '';
     }
 
-    let nombre = nombreOverride || "Nuevo producto";
+    let nombre = nombreOverride !== null ? nombreOverride : "";
     let precio = precioOverride != null ? Number(precioOverride) : 0;
 
     if (sku && !nombreOverride) {
@@ -598,14 +833,14 @@ function agregarLineaWysiwyg(sku = null, nombreOverride = null, precioOverride =
     tr.innerHTML = `
         <td style="text-align: left; width: 75px;">
             <div style="display:flex; align-items:center; gap: 3px;">
-                <button class="btn-remove print-hide" onclick="this.closest('tr').remove(); recalcularTotalesWysiwyg();" title="Eliminar" style="padding: 2px;">
+                <button class="btn-remove print-hide" onclick="this.closest('tr').remove(); recalcularTotalesWysiwyg(); cerrarDescAutocomplete();" title="Eliminar" style="padding: 2px;">
                     ${Icons.x}
                 </button>
                 <input type="text" class="wysiwyg-input sku-input" placeholder="CÓD" value="${escapeHtml(sku || '')}" onchange="buscarProductoWysiwyg(this)" style="width: 100%; font-size: 11px;" maxlength="10">
             </div>
         </td>
         <td style="text-align: left;">
-            <textarea class="wysiwyg-input desc-input" placeholder="Descripción del producto..." rows="1">${escapeHtml(nombre)}</textarea>
+            <textarea class="wysiwyg-input desc-input" placeholder="Escribe para buscar o ingresar producto..." rows="1">${escapeHtml(nombre)}</textarea>
         </td>
         <td style="text-align: center; width: 45px;">
             <input type="number" class="wysiwyg-input qty-input" value="1" min="1" onchange="recalcularTotalesWysiwyg()" onkeyup="recalcularTotalesWysiwyg()" style="text-align: center; width: 40px; font-size: 11px;">
@@ -618,22 +853,52 @@ function agregarLineaWysiwyg(sku = null, nombreOverride = null, precioOverride =
         </td>
     `;
     tbody.appendChild(tr);
-    // Auto-grow textarea on input and keydown
+
+    // Auto-grow textarea y conexión de autocomplete
     const textarea = tr.querySelector('textarea.desc-input');
     if (textarea) {
         const autoGrow = function (el) {
             el.style.height = '22px';
             el.style.height = el.scrollHeight + 'px';
         };
-        textarea.addEventListener('input', function () { autoGrow(this); });
+
+        textarea.addEventListener('input', function () {
+            autoGrow(this);
+            renderDescAutocomplete(this, 'wysiwyg');
+        });
+
+        textarea.addEventListener('focus', function () {
+            if (this.value === 'Nuevo producto') {
+                this.select();
+            } else if (this.value.trim().length > 0) {
+                renderDescAutocomplete(this, 'wysiwyg');
+            }
+        });
+
         textarea.addEventListener('keydown', function (e) {
+            if (handleAcKeydown(e, this, 'wysiwyg')) {
+                return;
+            }
             if (e.key === 'Enter' && !e.shiftKey) {
-                // Allow normal Enter for line breaks (don't prevent default)
                 setTimeout(() => autoGrow(this), 0);
             }
         });
+
+        textarea.addEventListener('blur', function () {
+            setTimeout(() => {
+                if (acActiveInput === this) {
+                    cerrarDescAutocomplete();
+                }
+            }, 220);
+        });
+
         // Initial auto-size
         setTimeout(() => autoGrow(textarea), 10);
+
+        // Si es una fila nueva sin datos, enfocarla directamente
+        if (!sku && !nombreOverride) {
+            setTimeout(() => textarea.focus(), 60);
+        }
     }
     recalcularTotalesWysiwyg();
 }
