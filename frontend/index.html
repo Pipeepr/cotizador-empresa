@@ -831,7 +831,7 @@
                     <div class="form-group" id="prod-fecha-group">
                         <label class="form-label" for="prod-fecha">Fecha de Modificación de Precio</label>
                         <div style="display:flex; gap: 8px; align-items:center;">
-                            <input type="date" class="form-control" id="prod-fecha" />
+                            <input type="date" class="form-control" id="prod-fecha" min="2010-01-01" />
                             <button type="button" class="btn btn-ghost btn-sm" onclick="borrarProdFecha()" title="Borrar fecha">
                                 ❌ Borrar fecha
                             </button>
@@ -909,7 +909,7 @@
                             + Agregar registro histórico manual
                         </div>
                         <div style="display: grid; grid-template-columns: 140px 130px 1fr auto; gap: 8px; align-items: center;">
-                            <input type="date" id="hist-nuevo-fecha" class="form-control" style="padding: 6px 8px; font-size: 12px;" />
+                            <input type="date" id="hist-nuevo-fecha" class="form-control" min="2010-01-01" style="padding: 6px 8px; font-size: 12px;" />
                             <input type="number" id="hist-nuevo-precio" class="form-control" placeholder="Precio ($)" min="0" style="padding: 6px 8px; font-size: 12px;" />
                             <input type="text" id="hist-nuevo-motivo" class="form-control" placeholder="Motivo (ej: Precio 2025)" style="padding: 6px 8px; font-size: 12px;" />
                             <button type="button" class="btn btn-primary btn-sm" onclick="guardarRegistroHistorialManual()">

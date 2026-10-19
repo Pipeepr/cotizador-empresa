@@ -1877,7 +1877,7 @@ async function cargarHistorialPreciosTabla(sku) {
             return `
                 <tr data-hist-id="${r.id}">
                     <td style="padding: 8px; vertical-align: middle;">
-                        <input type="date" class="form-control hist-item-fecha" value="${fechaInputVal}" style="padding: 4px 6px; font-size: 12px; width: 135px;" />
+                        <input type="date" class="form-control hist-item-fecha" min="2010-01-01" value="${fechaInputVal}" style="padding: 4px 6px; font-size: 12px; width: 135px;" />
                     </td>
                     <td style="padding: 8px; vertical-align: middle;">
                         <strong style="color: var(--success); font-size: 13px;">${formatCLP(r.precio)}</strong>
